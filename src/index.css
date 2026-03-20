@@ -57,16 +57,16 @@ body {
   Fallback: 47px top (iPhone notch), 34px bottom (home indicator).
 */
 .safe-top {
-  height: var(--safe-top, 47px);
+  height: var(--safe-top, env(safe-area-inset-top, 0px));
 }
 .safe-bottom {
-  height: var(--safe-bottom, 34px);
+  height: var(--safe-bottom, env(safe-area-inset-bottom, 0px));
 }
 .pt-safe {
-  padding-top: var(--safe-top, 47px);
+  padding-top: var(--safe-top, env(safe-area-inset-top, 0px));
 }
 .pb-safe {
-  padding-bottom: var(--safe-bottom, 34px);
+  padding-bottom: var(--safe-bottom, env(safe-area-inset-bottom, 0px));
 }
 
 /* Scrollbar — hide on native, thin on web */
@@ -108,12 +108,16 @@ select option {
 @media (min-width: 481px) {
   .safe-top { height: 0px; }
   .safe-bottom { height: 0px; }
+  .pt-safe { padding-top: 0px; }
+  .pb-safe { padding-bottom: 0px; }
 }
 
 /* Standalone PWA on mobile needs safe areas even on web */
 @media (display-mode: standalone) {
   .safe-top { height: env(safe-area-inset-top, 47px); }
   .safe-bottom { height: env(safe-area-inset-bottom, 34px); }
+  .pt-safe { padding-top: env(safe-area-inset-top, 47px); }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom, 34px); }
 }
 
 /* Hide scrollbar for bottom nav */
