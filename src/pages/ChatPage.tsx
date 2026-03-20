@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '@/stores/appStore'
 import { uid, timeAgo, cn } from '@/lib/utils'
 import { hapticLight } from '@/lib/haptics'
-import { getAuthorId, isMe } from '@/lib/users'
+import { getAuthorId, isMe, getUserName } from '@/lib/users'
 import { Avatar } from '@/components/ui/Avatar'
 import { LinkPicker } from '@/components/ui/LinkPicker'
 import type { Group, ChatEmbed, ChatMessage } from '@/types'
@@ -159,13 +159,13 @@ function LinkEmbed({ message, group }: { message: ChatMessage; group: Group }) {
     case 'expense': {
       const exp = group.expenses.find((e) => e.id === linked.id)
       if (!exp) return null
-      name = exp.title; emoji = '💰'; color = '#f472b6'; sub = `${exp.paidById} · ${exp.date}`
+      name = exp.title; emoji = '💰'; color = '#f472b6'; sub = `${getUserName(exp.paidById)} · ${exp.date}`
       break
     }
     case 'suggestion': {
       const sug = group.suggestions.find((s) => s.id === linked.id)
       if (!sug) return null
-      name = sug.text; emoji = '💡'; color = '#a78bfa'; sub = sug.authorId
+      name = sug.text; emoji = '💡'; color = '#a78bfa'; sub = getUserName(sug.authorId)
       break
     }
   }
@@ -297,7 +297,7 @@ function EmbedCreator({ group, mode, onClose, onSend }: {
       <select value={todoAssignee} onChange={(e) => setTodoAssignee(e.target.value)}
         className="w-full px-3 py-1.5 bg-[#0e1015] border border-white/[0.08] rounded-lg text-zinc-400 text-[12px] outline-none">
         <option value="">Zuweisen an...</option>
-        {group.members.map((m) => <option key={m} value={m}>{m}</option>)}
+        {group.members.map((m) => <option key={m} value={m}>{getUserName(m)}</option>)}
       </select>
       <div className="flex justify-end mt-2">
         <button onClick={sendTodo} className="px-3 py-1.5 bg-cyan-500 text-white rounded-lg text-[11px] font-semibold active:scale-95">
@@ -389,7 +389,7 @@ export function ChatPage() {
               {showAvatar && !isOwn && <Avatar name={m.authorId} size={28} className="mt-1" />}
               <div className={cn('min-w-0', m.embed && 'w-full')}>
                 {showAvatar && !isOwn && (
-                  <p className="text-[10px] text-zinc-600 mb-0.5 ml-1">{m.authorId}</p>
+                  <p className="text-[10px] text-zinc-600 mb-0.5 ml-1">{getUserName(m.authorId)}</p>
                 )}
                 <div className={cn(
                   'px-3.5 py-2.5 rounded-2xl text-[13.5px] leading-relaxed',

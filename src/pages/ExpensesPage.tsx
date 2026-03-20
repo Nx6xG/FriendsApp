@@ -9,6 +9,7 @@ import { LinkedChips } from '@/components/ui/LinkedChips'
 import { notifyExpenseAdded } from '@/lib/notifications'
 import { LinkPicker } from '@/components/ui/LinkPicker'
 import { hapticLight } from '@/lib/haptics'
+import { getUserName } from '@/lib/users'
 import { ProPrompt } from '@/components/ui/ProGate'
 import { canUseFeature } from '@/lib/plans'
 import type { Group, ExpenseCategory } from '@/types'
@@ -207,11 +208,11 @@ export function ExpensesPage() {
               >
                 <Avatar name={t.from} size={26} />
                 <span className="text-xs font-medium text-zinc-400 flex-1 truncate">
-                  {t.from}
+                  {getUserName(t.from)}
                 </span>
                 <ArrowRight size={12} className="text-zinc-600 shrink-0" />
                 <span className="text-xs font-medium text-zinc-400 flex-1 truncate text-right">
-                  {t.to}
+                  {getUserName(t.to)}
                 </span>
                 <Avatar name={t.to} size={26} />
                 <span className="text-sm font-bold text-amber-400 tabular-nums ml-1">
@@ -246,7 +247,7 @@ export function ExpensesPage() {
                 className="flex items-center gap-2 px-3 py-2.5 bg-[#161822] border border-white/[0.06] rounded-xl opacity-60">
                 <Check size={12} className="text-emerald-400 shrink-0" />
                 <span className="text-[12px] text-zinc-400 flex-1">
-                  {p.from} → {p.to}
+                  {getUserName(p.from)} → {getUserName(p.to)}
                 </span>
                 <span className="text-[12px] font-semibold text-emerald-400 tabular-nums">
                   {currency(p.amount)}
@@ -309,7 +310,7 @@ export function ExpensesPage() {
                 >
                   {group.members.map((m) => (
                     <option key={m} value={m}>
-                      {m} zahlt
+                      {getUserName(m)} zahlt
                     </option>
                   ))}
                 </select>
@@ -343,7 +344,7 @@ export function ExpensesPage() {
                         : 'bg-[#0e1015] text-zinc-500 border border-white/[0.06]'
                     )}
                   >
-                    {m}
+                    {getUserName(m)}
                     {!useCustomSplit && splitWith.includes(m) && amount && (
                       <span className="ml-1 text-zinc-500">({currency(equalShare)})</span>
                     )}
@@ -357,7 +358,7 @@ export function ExpensesPage() {
                   {splitWith.map((m) => (
                     <div key={m} className="flex items-center gap-2">
                       <Avatar name={m} size={22} />
-                      <span className="text-[12px] text-zinc-400 flex-1">{m}</span>
+                      <span className="text-[12px] text-zinc-400 flex-1">{getUserName(m)}</span>
                       <input
                         value={customAmounts[m] || ''}
                         onChange={(e) => setCustomAmounts({ ...customAmounts, [m]: e.target.value })}
@@ -447,7 +448,7 @@ export function ExpensesPage() {
                 {e.recurring && e.recurring !== 'none' && <span className="text-[10px] text-indigo-400/50 ml-1">🔄</span>}
               </p>
               <p className="text-[11px] text-zinc-600 mt-0.5">
-                {e.paidById} · {e.date} · {e.splitBetween.length} Pers.
+                {getUserName(e.paidById)} · {e.date} · {e.splitBetween.length} Pers.
                 {e.customAmounts && <span className="text-indigo-400/50 ml-1">· individuell</span>}
               </p>
               {e.linkedItems && e.linkedItems.length > 0 && (

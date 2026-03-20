@@ -10,7 +10,7 @@ import { canUseFeature } from '@/lib/plans'
 import { ProPrompt } from '@/components/ui/ProGate'
 import { startLocationTracking, stopLocationTracking, isTrackingGroup } from '@/lib/location'
 import { uid, cn, timeAgo } from '@/lib/utils'
-import { getAuthorId, isMe } from '@/lib/users'
+import { getAuthorId, isMe, getUserName } from '@/lib/users'
 import { Avatar } from '@/components/ui/Avatar'
 import type { Group, MapPin as MapPinType } from '@/types'
 
@@ -322,7 +322,7 @@ export function MapPage() {
                   selectedPin.type === 'visited' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/15 text-amber-400'
                 )}>{selectedPin.type === 'visited' ? 'Besucht' : 'Wunschliste'}</span>
                 <Avatar name={selectedPin.addedBy} size={16} />
-                <span className="text-[11px] text-zinc-500">{selectedPin.addedBy}</span>
+                <span className="text-[11px] text-zinc-500">{getUserName(selectedPin.addedBy)}</span>
                 {selectedPin.date && <span className="text-[11px] text-zinc-600">{selectedPin.date}</span>}
               </div>
             </div>

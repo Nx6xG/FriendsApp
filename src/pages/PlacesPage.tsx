@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '@/stores/appStore'
 import { uid, cn } from '@/lib/utils'
 import { Avatar } from '@/components/ui/Avatar'
-import { getAuthorId, isMe } from '@/lib/users'
+import { getAuthorId, isMe, getUserName } from '@/lib/users'
 import type { Group, PlaceRating } from '@/types'
 
 const CATEGORIES = ['Restaurant', 'Café', 'Bar', 'Aktivität', 'Einkauf', 'Sonstiges']
@@ -302,7 +302,7 @@ export function PlacesPage() {
                       )}
 
                       <p className="text-[10px] text-zinc-700">
-                        Hinzugefügt von {place.addedBy}{place.visitedAt && ` · Besucht am ${place.visitedAt}`}
+                        Hinzugefügt von {getUserName(place.addedBy)}{place.visitedAt && ` · Besucht am ${place.visitedAt}`}
                       </p>
                     </div>
                   </motion.div>

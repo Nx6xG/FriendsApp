@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAppStore } from '@/stores/appStore'
 import { Avatar } from '@/components/ui/Avatar'
+import { getUserName } from '@/lib/users'
 
 export function JoinPage() {
   const { code } = useParams<{ code: string }>()
@@ -99,7 +100,7 @@ export function JoinPage() {
             </div>
             <div className="flex flex-wrap justify-center gap-1 mt-3">
               {group.members.slice(0, 6).map((m) => (
-                <span key={m} className="text-[11px] text-zinc-500">{m}</span>
+                <span key={m} className="text-[11px] text-zinc-500">{getUserName(m)}</span>
               ))}
             </div>
           </div>

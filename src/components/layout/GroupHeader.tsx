@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, Settings } from 'lucide-react'
 import type { Group } from '@/types'
+import { getUserName } from '@/lib/users'
 
 export function GroupHeader({ group }: { group: Group }) {
   const navigate = useNavigate()
@@ -20,7 +21,7 @@ export function GroupHeader({ group }: { group: Group }) {
         <span className="text-2xl">{group.emoji}</span>
         <div className="flex-1 min-w-0">
           <h1 className="text-[15px] font-bold tracking-tight truncate">{group.name}</h1>
-          <p className="text-[11px] text-zinc-500 truncate">{group.members.join(', ')}</p>
+          <p className="text-[11px] text-zinc-500 truncate">{group.members.map(getUserName).join(', ')}</p>
         </div>
         <button onClick={() => navigate(`/group/${group.id}/settings`)}
           className="text-zinc-500 active:text-zinc-300 p-1">

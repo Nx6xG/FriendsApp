@@ -8,7 +8,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { LinkedChips } from '@/components/ui/LinkedChips'
 import { notifyTodoAssigned } from '@/lib/notifications'
 import { hapticSuccess, hapticLight } from '@/lib/haptics'
-import { getAuthorId } from '@/lib/users'
+import { getAuthorId, getUserName } from '@/lib/users'
 import { LinkPicker } from '@/components/ui/LinkPicker'
 import type { Group, TodoItem } from '@/types'
 
@@ -108,7 +108,7 @@ function TodoDetail({ todo, group, onClose }: { todo: TodoItem; group: Group; on
                     selected ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/20' : 'bg-[#0e1015] text-zinc-400 border border-white/[0.06]'
                   )}>
                   <Avatar name={m} size={18} />
-                  {m}
+                  {getUserName(m)}
                   {selected && <Check size={12} />}
                 </button>
               )
@@ -222,7 +222,7 @@ function TodoDetail({ todo, group, onClose }: { todo: TodoItem; group: Group; on
                   <Avatar name={c.authorId} size={20} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-[12px] font-semibold text-zinc-300">{c.authorId}</span>
+                      <span className="text-[12px] font-semibold text-zinc-300">{getUserName(c.authorId)}</span>
                       <span className="text-[10px] text-zinc-600">{timeAgo(c.createdAt)}</span>
                     </div>
                     <p className="text-[12px] text-zinc-400 mt-0.5 break-words">{c.text}</p>
@@ -353,7 +353,7 @@ export function TodosPage() {
         >
           <option value="">Wer?</option>
           {group.members.map((m) => (
-            <option key={m} value={m}>{m}</option>
+            <option key={m} value={m}>{getUserName(m)}</option>
           ))}
         </select>
         <button

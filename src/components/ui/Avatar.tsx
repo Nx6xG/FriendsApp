@@ -1,4 +1,5 @@
 import { getAvatarColor } from '@/lib/utils'
+import { getUserName } from '@/lib/users'
 
 interface AvatarProps {
   name: string
@@ -7,7 +8,8 @@ interface AvatarProps {
 }
 
 export function Avatar({ name, size = 32, className = '' }: AvatarProps) {
-  const bg = getAvatarColor(name)
+  const displayName = getUserName(name)
+  const bg = getAvatarColor(displayName)
   return (
     <div
       className={`flex items-center justify-center rounded-full font-bold uppercase shrink-0 ${className}`}
@@ -20,7 +22,7 @@ export function Avatar({ name, size = 32, className = '' }: AvatarProps) {
         letterSpacing: '-0.02em',
       }}
     >
-      {name.slice(0, 2)}
+      {displayName.slice(0, 2)}
     </div>
   )
 }

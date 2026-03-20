@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { TrendingUp, Crown, Users, Award, Star } from 'lucide-react'
 import { currency, cn } from '@/lib/utils'
 import { Avatar } from '@/components/ui/Avatar'
+import { getUserName } from '@/lib/users'
 import type { Group } from '@/types'
 
 export function StatsPage() {
@@ -111,7 +112,7 @@ export function StatsPage() {
               </span>
               <Avatar name={name} size={28} />
               <div className="flex-1">
-                <p className="text-[13px] font-medium">{name}</p>
+                <p className="text-[13px] font-medium">{getUserName(name)}</p>
                 <div className="mt-1.5 h-1.5 rounded-full bg-white/[0.04] overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
@@ -141,7 +142,7 @@ export function StatsPage() {
             {roles.filter((r) => r.funRole).map((r) => (
               <div key={r.name} className="bg-[#161822] border border-white/[0.06] rounded-xl p-3 text-center">
                 <Avatar name={r.name} size={36} className="mx-auto mb-2" />
-                <p className="text-[13px] font-semibold">{r.name}</p>
+                <p className="text-[13px] font-semibold">{getUserName(r.name)}</p>
                 <p className="text-[11px] text-violet-400 font-medium mt-0.5">{r.funRole}</p>
                 <p className="text-[10px] text-zinc-600 mt-0.5 capitalize">{r.role}</p>
               </div>
@@ -163,7 +164,7 @@ export function StatsPage() {
             return (
               <div key={name} className="flex-1 bg-[#161822] border border-white/[0.06] rounded-xl p-3 text-center">
                 <Avatar name={name} size={28} className="mx-auto mb-1.5" />
-                <p className="text-[11px] font-medium truncate">{name}</p>
+                <p className="text-[11px] font-medium truncate">{getUserName(name)}</p>
                 <div className="mt-2 mx-auto w-6 bg-white/[0.04] rounded-full overflow-hidden" style={{ height: 40 }}>
                   <motion.div
                     initial={{ height: 0 }}

@@ -394,10 +394,15 @@ export const useAppStore = create<AppState>()(
         }
       },
       deleteGroup: (groupId) => {
+        const group = get().groups.find((g) => g.id === groupId)
         set((s) => ({ groups: s.groups.filter((g) => g.id !== groupId) }))
         if (!get().demoMode) {
           db.dbDeleteGroup(groupId).then(({ error }) => {
-            if (error) console.error('[DB]', error)
+            if (error) {
+              console.error('[DB] deleteGroup failed:', error)
+              // Re-add group if DB delete failed (e.g. RLS)
+              if (group) set((s) => ({ groups: [...s.groups, group] }))
+            }
           })
         }
       },

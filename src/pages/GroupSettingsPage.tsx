@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { useAppStore } from '@/stores/appStore'
 import { cn } from '@/lib/utils'
 import { Avatar } from '@/components/ui/Avatar'
+import { getUserName } from '@/lib/users'
 import { ALL_TABS, DEFAULT_GROUP_PREFS } from '@/lib/tabs'
 import type { Group, MemberRole, TagDef } from '@/types'
 
@@ -255,7 +256,7 @@ export function GroupSettingsPage() {
                 className="flex items-center gap-3 p-3 bg-[#0e1015] border border-white/[0.06] rounded-xl">
                 <Avatar name={member.name} size={32} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-medium">{member.name}</p>
+                  <p className="text-[13px] font-medium">{getUserName(member.name)}</p>
                   {member.funRole && (
                     <p className="text-[10px] text-zinc-600">"{member.funRole}"</p>
                   )}
