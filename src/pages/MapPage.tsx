@@ -6,6 +6,8 @@ import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap, useMapEvents }
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useAppStore } from '@/stores/appStore'
+import { canUseFeature } from '@/lib/plans'
+import { ProPrompt } from '@/components/ui/ProGate'
 import { startLocationTracking, stopLocationTracking, isTrackingGroup } from '@/lib/location'
 import { uid, cn, timeAgo } from '@/lib/utils'
 import { Avatar } from '@/components/ui/Avatar'
@@ -100,12 +102,14 @@ export function MapPage() {
   const [tracking, setTracking] = useState(isTrackingGroup(group.id))
   const [flyTarget, setFlyTarget] = useState<{ lat: number; lng: number } | null>(null)
   const [tapLocation, setTapLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const [showProPrompt, setShowProPrompt] = useState(false)
 
   const toggleTracking = useCallback(async () => {
     if (tracking) {
       await stopLocationTracking(group.id)
       setTracking(false)
     } else {
+      if (!canUseFeature('gps')) { setShowProPrompt(true); return }
       try {
         const success = await startLocationTracking(group.id)
         setTracking(success ?? false)
@@ -427,6 +431,7 @@ export function MapPage() {
           </button>
         ))}
       </div>
+      {showProPrompt && <ProPrompt feature="GPS Live-Standort" onClose={() => setShowProPrompt(false)} />}
     </div>
   )
 }

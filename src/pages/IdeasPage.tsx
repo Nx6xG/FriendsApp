@@ -7,6 +7,8 @@ import { uid, cn } from '@/lib/utils'
 import { Avatar } from '@/components/ui/Avatar'
 import { LinkedChips } from '@/components/ui/LinkedChips'
 import { LinkPicker } from '@/components/ui/LinkPicker'
+import { canUseFeature } from '@/lib/plans'
+import { ProPrompt } from '@/components/ui/ProGate'
 import type { Group } from '@/types'
 
 type Mode = 'voting' | 'bucket'
@@ -17,6 +19,7 @@ export function IdeasPage() {
   const [text, setText] = useState('')
   const [mode, setMode] = useState<Mode>('voting')
   const [linkingSuggestionId, setLinkingSuggestionId] = useState<string | null>(null)
+  const [showProPrompt, setShowProPrompt] = useState(false)
 
   const handleAdd = () => {
     if (!text.trim()) return
@@ -82,7 +85,10 @@ export function IdeasPage() {
           )}>
           <Vote size={15} /> Voting
         </button>
-        <button onClick={() => setMode('bucket')}
+        <button onClick={() => {
+            if (!canUseFeature('bucketList')) { setShowProPrompt(true); return }
+            setMode('bucket')
+          }}
           className={cn('flex-1 flex items-center justify-center gap-1.5 py-3 rounded-lg text-[13px] font-semibold transition-colors',
             mode === 'bucket' ? 'bg-emerald-500/15 text-emerald-300' : 'text-zinc-500'
           )}>
@@ -235,6 +241,8 @@ export function IdeasPage() {
           )}
         </>
       )}
+
+      {showProPrompt && <ProPrompt feature="Bucket List" onClose={() => setShowProPrompt(false)} />}
 
       {linkingSuggestionId && (
         <LinkPicker

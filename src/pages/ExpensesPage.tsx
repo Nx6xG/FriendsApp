@@ -9,6 +9,8 @@ import { LinkedChips } from '@/components/ui/LinkedChips'
 import { notifyExpenseAdded } from '@/lib/notifications'
 import { LinkPicker } from '@/components/ui/LinkPicker'
 import { hapticLight } from '@/lib/haptics'
+import { ProPrompt } from '@/components/ui/ProGate'
+import { canUseFeature } from '@/lib/plans'
 import type { Group, ExpenseCategory } from '@/types'
 
 const EXPENSE_CATEGORIES: { key: ExpenseCategory; label: string; emoji: string }[] = [
@@ -97,6 +99,7 @@ export function ExpensesPage() {
   const [useCustomSplit, setUseCustomSplit] = useState(false)
   const [customAmounts, setCustomAmounts] = useState<Record<string, string>>({})
   const [linkingExpenseId, setLinkingExpenseId] = useState<string | null>(null)
+  const [showProPrompt, setShowProPrompt] = useState<string | null>(null)
   const [category, setCategory] = useState<ExpenseCategory>('other')
   const [recurring, setRecurring] = useState<'none' | 'weekly' | 'monthly'>('none')
 
@@ -315,12 +318,16 @@ export function ExpensesPage() {
               {/* Split mode toggle */}
               <div className="flex items-center justify-between">
                 <p className="text-[11px] text-zinc-500">Aufteilen zwischen:</p>
-                <button onClick={() => setUseCustomSplit(!useCustomSplit)}
+                <button onClick={() => {
+                    if (!canUseFeature('customSplit')) { setShowProPrompt('Individueller Split'); return }
+                    setUseCustomSplit(!useCustomSplit)
+                  }}
                   className={cn('flex items-center gap-1 text-[12px] font-medium px-3 py-2.5 rounded-lg transition-colors',
                     useCustomSplit ? 'text-indigo-300 bg-indigo-500/10' : 'text-zinc-600'
                   )}>
                   {useCustomSplit ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
                   {useCustomSplit ? 'Individuell' : 'Gleichmäßig'}
+                  {!canUseFeature('customSplit') && <span className="text-[9px] text-indigo-400 ml-1">⚡Pro</span>}
                 </button>
               </div>
 
@@ -395,11 +402,15 @@ export function ExpensesPage() {
                 <p className="text-[11px] text-zinc-500">Wiederkehrend:</p>
                 <div className="flex gap-1.5">
                   {(['none', 'weekly', 'monthly'] as const).map((r) => (
-                    <button key={r} onClick={() => setRecurring(r)}
+                    <button key={r} onClick={() => {
+                        if (r !== 'none' && !canUseFeature('recurringExpenses')) { setShowProPrompt('Wiederkehrende Ausgaben'); return }
+                        setRecurring(r)
+                      }}
                       className={cn('px-2.5 py-2 rounded-lg text-[11px] font-medium transition-colors',
                         recurring === r ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'bg-[#0e1015] text-zinc-500 border border-white/[0.06]'
                       )}>
                       {r === 'none' ? 'Einmalig' : r === 'weekly' ? 'Wöchentlich' : 'Monatlich'}
+                      {r !== 'none' && !canUseFeature('recurringExpenses') && <span className="text-[9px] text-indigo-400 ml-1">⚡Pro</span>}
                     </button>
                   ))}
                 </div>
@@ -468,6 +479,10 @@ export function ExpensesPage() {
           onConfirm={(items) => { updateExpense(group.id, linkingExpenseId, { linkedItems: items }); setLinkingExpenseId(null) }}
           onClose={() => setLinkingExpenseId(null)}
         />
+      )}
+
+      {showProPrompt && (
+        <ProPrompt feature={showProPrompt} onClose={() => setShowProPrompt(null)} />
       )}
     </div>
   )

@@ -8,6 +8,8 @@ import { Avatar } from '@/components/ui/Avatar'
 import { LinkedChips } from '@/components/ui/LinkedChips'
 import { notifyEventCreated } from '@/lib/notifications'
 import { hapticLight } from '@/lib/haptics'
+import { canUseFeature } from '@/lib/plans'
+import { ProPrompt } from '@/components/ui/ProGate'
 import { LinkPicker } from '@/components/ui/LinkPicker'
 import type { Group, GroupEvent } from '@/types'
 
@@ -84,6 +86,7 @@ export function EventsPage() {
   })
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [linkingEventId, setLinkingEventId] = useState<string | null>(null)
+  const [showProPrompt, setShowProPrompt] = useState<string | null>(null)
   const [recurrence, setRecurrence] = useState<'none' | 'weekly' | 'biweekly' | 'monthly'>('none')
 
   const events = [...(group.events || [])].sort(
@@ -163,8 +166,9 @@ export function EventsPage() {
           </div>
           {!isPast && (
             <div className="flex items-center gap-1">
-              <button onClick={() => downloadICS(event)} className="text-zinc-700 active:text-indigo-400 p-2">
+              <button onClick={() => { if (!canUseFeature('calendarExport')) { setShowProPrompt('Kalender-Export'); return } downloadICS(event) }} className={cn('text-zinc-700 active:text-indigo-400 p-2', !canUseFeature('calendarExport') && 'opacity-40')}>
                 <CalendarPlus size={13} />
+                {!canUseFeature('calendarExport') && <span className="text-[9px] text-indigo-400 ml-0.5">⚡Pro</span>}
               </button>
               {onLink && (
                 <button onClick={onLink} className="text-zinc-700 active:text-indigo-400 p-2">
@@ -302,11 +306,15 @@ export function EventsPage() {
                 <p className="text-[11px] text-zinc-500">Wiederholen:</p>
                 <div className="flex gap-1.5">
                   {(['none', 'weekly', 'biweekly', 'monthly'] as const).map((r) => (
-                    <button key={r} onClick={() => setRecurrence(r)}
+                    <button key={r} onClick={() => {
+                        if (r !== 'none' && !canUseFeature('recurringExpenses')) { setShowProPrompt('Wiederkehrende Events'); return }
+                        setRecurrence(r)
+                      }}
                       className={cn('px-2.5 py-2 rounded-lg text-[11px] font-medium transition-colors',
                         recurrence === r ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'bg-[#0e1015] text-zinc-500 border border-white/[0.06]'
                       )}>
                       {r === 'none' ? 'Einmalig' : r === 'weekly' ? 'Wöchentl.' : r === 'biweekly' ? 'Alle 2 W.' : 'Monatlich'}
+                      {r !== 'none' && !canUseFeature('recurringExpenses') && <span className="text-[9px] text-indigo-400 ml-1">⚡Pro</span>}
                     </button>
                   ))}
                 </div>
@@ -437,6 +445,10 @@ export function EventsPage() {
           onConfirm={(items) => { updateEvent(group.id, linkingEventId, { linkedItems: items }); setLinkingEventId(null) }}
           onClose={() => setLinkingEventId(null)}
         />
+      )}
+
+      {showProPrompt && (
+        <ProPrompt feature={showProPrompt} onClose={() => setShowProPrompt(null)} />
       )}
     </div>
   )

@@ -22,6 +22,7 @@ import { StatsPage } from '@/pages/StatsPage'
 import { MapPage } from '@/pages/MapPage'
 import { GroupSettingsPage } from '@/pages/GroupSettingsPage'
 import { SearchPage } from '@/pages/SearchPage'
+import { PaywallPage } from '@/pages/PaywallPage'
 
 function AppRoutes() {
   return (
@@ -29,6 +30,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<HomePage />} />
       <Route path="/search" element={<SearchPage />} />
+      <Route path="/pro" element={<PaywallPage />} />
       <Route path="/notifications" element={<NotificationsPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/group/:groupId" element={<GroupLayout />}>

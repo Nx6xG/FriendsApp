@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, User, Bell, Moon, Globe, Trash2, LogOut, Shield, Info, EyeOff, Eye, HelpCircle } from 'lucide-react'
+import { ChevronLeft, ChevronRight, User, Bell, Moon, Globe, Trash2, LogOut, Shield, Info, EyeOff, Eye, HelpCircle, Zap } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAppStore } from '@/stores/appStore'
 import { supabase } from '@/lib/supabase'
@@ -232,6 +232,43 @@ export function ProfilePage() {
         </div>
       </div>
 
+      {/* Pro status */}
+      {profile.plan === 'pro' ? (
+        <div className="mx-4 mt-5 bg-gradient-to-r from-emerald-600/20 to-indigo-600/20 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+            <Zap size={20} className="text-emerald-400" />
+          </div>
+          <div className="flex-1">
+            <p className="text-[14px] font-bold text-emerald-300">Friends Pro ✓</p>
+            <p className="text-[11px] text-zinc-500">
+              {profile.planExpiresAt
+                ? (profile.language === 'de'
+                    ? `Gekündigt — läuft bis ${new Date(profile.planExpiresAt).toLocaleDateString('de-AT')}`
+                    : `Cancelled — active until ${new Date(profile.planExpiresAt).toLocaleDateString('en-US')}`)
+                : (profile.language === 'de' ? 'Alle Features freigeschaltet' : 'All features unlocked')}
+            </p>
+          </div>
+          <button onClick={() => window.open('https://app.lemonsqueezy.com/my-orders', '_blank')}
+            className="text-[11px] text-zinc-500 active:text-zinc-300 px-3 py-2">
+            {profile.language === 'de' ? 'Verwalten' : 'Manage'}
+          </button>
+        </div>
+      ) : (
+        <button onClick={() => navigate('/pro')}
+          className="mx-4 mt-5 bg-gradient-to-r from-indigo-600/20 to-violet-600/20 border border-indigo-500/20 rounded-2xl p-4 flex items-center gap-3 w-[calc(100%-32px)] text-left active:scale-[0.98] transition-transform">
+          <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center">
+            <Zap size={20} className="text-indigo-400" />
+          </div>
+          <div className="flex-1">
+            <p className="text-[14px] font-bold text-indigo-300">Friends Pro</p>
+            <p className="text-[11px] text-zinc-500">
+              {profile.language === 'de' ? 'Alle Features freischalten' : 'Unlock all features'}
+            </p>
+          </div>
+          <ChevronRight size={16} className="text-indigo-400/50" />
+        </button>
+      )}
+
       {/* Settings sections */}
       <div className="mx-4 mt-6">
         <h3 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2 px-1">{t('settings.title')}</h3>
@@ -282,7 +319,18 @@ export function ProfilePage() {
                 className="flex-1 py-2.5 rounded-xl border border-white/[0.08] text-[13px] font-medium text-zinc-400">
                 {t('cancel')}
               </button>
-              <button onClick={() => { resetAppData(); setShowConfirmReset(false); navigate('/') }}
+              <button onClick={async () => {
+                resetAppData()
+                // Restore name from auth session
+                const { data } = await supabase.auth.getUser()
+                if (data.user) {
+                  const name = data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User'
+                  updateProfile({ name })
+                  useAppStore.getState().setUser(name)
+                }
+                setShowConfirmReset(false)
+                navigate('/')
+              }}
                 className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-[13px] font-bold active:scale-95">
                 {t('settings.reset_btn')}
               </button>

@@ -5,6 +5,8 @@ import { useAppStore } from '@/stores/appStore'
 import { Avatar } from '@/components/ui/Avatar'
 import { NewGroupSheet } from '@/components/groups/NewGroupSheet'
 import { DemoBanner, DemoPrompt } from '@/components/ui/DemoBanner'
+import { ProPrompt } from '@/components/ui/ProGate'
+import { canCreateGroup } from '@/lib/plans'
 import { useT } from '@/lib/i18n'
 
 export function HomePage() {
@@ -16,6 +18,7 @@ export function HomePage() {
   const [joinCode, setJoinCode] = useState('')
   const [joinError, setJoinError] = useState('')
   const [showDemoPrompt, setShowDemoPrompt] = useState(false)
+  const [showProPrompt, setShowProPrompt] = useState(false)
   const unreadCount = notifications.filter((n) => !n.read).length
 
   const handleJoin = () => {
@@ -124,10 +127,15 @@ export function HomePage() {
 
         <div className="flex gap-2 mt-4">
           <button
-            onClick={() => demoMode ? setShowDemoPrompt(true) : setShowNew(true)}
+            onClick={() => {
+              if (demoMode) { setShowDemoPrompt(true); return }
+              if (!canCreateGroup()) { setShowProPrompt(true); return }
+              setShowNew(true)
+            }}
             className="flex-1 py-3.5 border-2 border-dashed border-white/[0.08] rounded-2xl text-indigo-400 font-semibold text-sm flex items-center justify-center gap-2 active:bg-white/[0.02] transition-colors"
           >
             <Plus size={16} /> {t('home.new_group')}
+            {!canCreateGroup() && <span className="text-[9px] text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded-full">⚡Pro</span>}
           </button>
           <button
             onClick={() => demoMode ? setShowDemoPrompt(true) : setShowJoin(!showJoin)}
@@ -166,6 +174,13 @@ export function HomePage() {
       </div>
 
       {showNew && <NewGroupSheet onClose={() => setShowNew(false)} />}
+
+      {showProPrompt && (
+        <ProPrompt
+          feature={profile.language === 'de' ? 'Mehr als 2 Gruppen' : 'More than 2 groups'}
+          onClose={() => setShowProPrompt(false)}
+        />
+      )}
 
       {showDemoPrompt && (
         <DemoPrompt

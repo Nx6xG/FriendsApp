@@ -108,6 +108,8 @@ export interface ChatMessage {
 }
 
 // Profile / Settings
+export type PlanType = 'free' | 'pro'
+
 export interface UserProfile {
   name: string
   emoji: string
@@ -117,6 +119,8 @@ export interface UserProfile {
   darkMode: boolean
   language: 'de' | 'en'
   hiddenGroups?: string[]
+  plan?: PlanType
+  planExpiresAt?: number
 }
 
 export interface FeedItem {

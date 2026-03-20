@@ -147,6 +147,8 @@ export async function fetchProfile(userId: string): Promise<Partial<UserProfile>
     name: data.name, emoji: data.emoji, status: data.status,
     language: data.language, darkMode: data.dark_mode,
     notificationsEnabled: data.notifications_enabled,
+    plan: data.plan || 'free',
+    planExpiresAt: data.plan_expires_at ? new Date(data.plan_expires_at).getTime() : undefined,
   }
 }
 
