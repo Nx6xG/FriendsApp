@@ -218,6 +218,7 @@ export interface Group {
   // V3
   mapPins?: MapPin[]
   liveLocations?: LiveLocation[]
+  createdBy?: string
   createdAt: number
 }
 

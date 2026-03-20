@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { registerUser } from './users'
+import { logError } from './logger'
 import type {
   Group, TodoItem, Expense, Payment, Suggestion, ChatMessage,
   GroupEvent, Place, PlaceRating, MapPin as MapPinType, LiveLocation,
@@ -14,7 +15,7 @@ export async function fetchUserGroups(userId: string): Promise<Group[]> {
   // 1. Get memberships
   const { data: memberships, error: memErr } = await supabase
     .from('group_members').select('group_id, role, fun_role').eq('user_id', uid)
-  if (memErr) { console.error('[DB] memberships error:', memErr.message); return [] }
+  if (memErr) { logError('[DB] memberships error:', memErr.message); return [] }
   if (!memberships || memberships.length === 0) return []
 
   const groupIds = memberships.map((m) => m.group_id)
@@ -136,6 +137,7 @@ export async function fetchUserGroups(userId: string): Promise<Group[]> {
         userId: l.user_id, lat: Number(l.lat), lng: Number(l.lng), label: l.label,
         sharing: l.sharing, updatedAt: new Date(l.updated_at).getTime(),
       })),
+      createdBy: g.created_by,
       createdAt: new Date(g.created_at).getTime(),
     }
   })
@@ -189,6 +191,9 @@ export const dbDeleteGroup = (id: string) =>
 export const dbAddMember = (groupId: string, userId: string, role = 'member') =>
   supabase.from('group_members').insert({ group_id: groupId, user_id: userId, role })
 
+export const dbRemoveMember = (groupId: string, userId: string) =>
+  supabase.from('group_members').delete().eq('group_id', groupId).eq('user_id', userId)
+
 // Todos
 export const dbInsertTodo = (groupId: string, t: TodoItem, createdBy: string) =>
   supabase.from('todos').insert({
@@ -235,6 +240,8 @@ export const dbUpdateExpense = (id: string, updates: Partial<Expense>) => {
   if (updates.splitBetween !== undefined) m.split_between = updates.splitBetween
   if (updates.customAmounts !== undefined) m.custom_amounts = updates.customAmounts
   if (updates.category !== undefined) m.category = updates.category
+  if (updates.date !== undefined) m.date = updates.date
+  if (updates.recurring !== undefined) m.recurring = updates.recurring
   if (updates.linkedItems !== undefined) m.linked_items = updates.linkedItems
   return supabase.from('expenses').update(m).eq('id', id)
 }
@@ -262,6 +269,7 @@ export const dbUpdateSuggestion = (id: string, updates: Partial<Suggestion>) => 
   if (updates.text !== undefined) m.text = updates.text
   if (updates.votes !== undefined) m.votes = updates.votes
   if (updates.done !== undefined) m.done = updates.done
+  if (updates.mode !== undefined) m.mode = updates.mode
   if (updates.linkedItems !== undefined) m.linked_items = updates.linkedItems
   return supabase.from('suggestions').update(m).eq('id', id)
 }
@@ -290,10 +298,14 @@ export const dbInsertEvent = (groupId: string, e: GroupEvent) =>
 export const dbUpdateEvent = (id: string, updates: Partial<GroupEvent>) => {
   const m: Record<string, unknown> = {}
   if (updates.title !== undefined) m.title = updates.title
-  if (updates.attendees !== undefined) m.attendees = updates.attendees
-  if (updates.linkedItems !== undefined) m.linked_items = updates.linkedItems
+  if (updates.emoji !== undefined) m.emoji = updates.emoji
+  if (updates.date !== undefined) m.date = updates.date
+  if (updates.time !== undefined) m.time = updates.time
   if (updates.location !== undefined) m.location = updates.location
   if (updates.description !== undefined) m.description = updates.description
+  if (updates.attendees !== undefined) m.attendees = updates.attendees
+  if (updates.recurrence !== undefined) m.recurrence = updates.recurrence
+  if (updates.linkedItems !== undefined) m.linked_items = updates.linkedItems
   return supabase.from('events').update(m).eq('id', id)
 }
 
@@ -336,11 +348,15 @@ export const dbInsertFeedItem = (groupId: string, id: string, type: string, text
   supabase.from('feed_items').insert({ id, group_id: groupId, type, text, created_at: now() })
 
 // Notifications
-export const dbInsertNotification = (n: Notification) =>
-  supabase.from('notifications').insert({
-    id: n.id, user_id: n.groupId ? undefined : n.id, type: n.type, title: n.title,
+export const dbInsertNotification = async (n: Notification) => {
+  const { data } = await supabase.auth.getUser()
+  const userId = data.user?.id
+  if (!userId) return { error: { message: 'Not authenticated' } }
+  return supabase.from('notifications').insert({
+    id: n.id, user_id: userId, type: n.type, title: n.title,
     body: n.body, group_id: n.groupId, read: n.read, created_at: now(),
   })
+}
 
 export const dbUpdateNotification = (id: string, updates: Record<string, unknown>) =>
   supabase.from('notifications').update(updates).eq('id', id)

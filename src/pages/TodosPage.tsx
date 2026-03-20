@@ -10,6 +10,7 @@ import { notifyTodoAssigned } from '@/lib/notifications'
 import { hapticSuccess, hapticLight } from '@/lib/haptics'
 import { getAuthorId, getUserName } from '@/lib/users'
 import { LinkPicker } from '@/components/ui/LinkPicker'
+import { useT } from '@/lib/i18n'
 import type { Group, TodoItem } from '@/types'
 
 const PRIORITY_CONFIG = {
@@ -22,6 +23,7 @@ const PRIORITY_CONFIG = {
 
 function TodoDetail({ todo, group, onClose }: { todo: TodoItem; group: Group; onClose: () => void }) {
   const { currentUser, updateTodo, toggleTodo, deleteTodo, addFeedItem, addTodoComment } = useAppStore()
+  const t = useT()
   const [desc, setDesc] = useState(todo.description || '')
   const [assignees, setAssignees] = useState<string[]>(todo.assigneeIds)
   const [priority, setPriority] = useState(todo.priority || 'medium')
@@ -91,7 +93,7 @@ function TodoDetail({ todo, group, onClose }: { todo: TodoItem; group: Group; on
 
         {/* Assignees */}
         <div className="mb-4">
-          <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block">Zugewiesen an</label>
+          <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block">{t('todos.assigned_to')}</label>
           <div className="flex gap-2 flex-wrap">
             {group.members.map((m) => {
               const selected = assignees.includes(m)
@@ -118,7 +120,7 @@ function TodoDetail({ todo, group, onClose }: { todo: TodoItem; group: Group; on
 
         {/* Priority */}
         <div className="mb-4">
-          <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block">Priorität</label>
+          <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block">{t('todos.priority')}</label>
           <div className="flex gap-2">
             {(['low', 'medium', 'high'] as const).map((p) => {
               const cfg = PRIORITY_CONFIG[p]
@@ -128,7 +130,7 @@ function TodoDetail({ todo, group, onClose }: { todo: TodoItem; group: Group; on
                     priority === p ? `${cfg.bg} ${cfg.color} border border-current/20` : 'bg-[#0e1015] text-zinc-500 border border-white/[0.06]'
                   )}>
                   <div className={cn('w-2 h-2 rounded-full', cfg.dot)} />
-                  {cfg.label}
+                  {t(`todos.priority_${p}`)}
                 </button>
               )
             })}
@@ -137,7 +139,7 @@ function TodoDetail({ todo, group, onClose }: { todo: TodoItem; group: Group; on
 
         {/* Due date */}
         <div className="mb-4">
-          <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block">Fällig am</label>
+          <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block">{t('todos.due_date')}</label>
           <div className="flex gap-2">
             <input type="date" value={dueDate}
               onChange={(e) => { setDueDate(e.target.value); save({ dueDate: e.target.value || undefined }) }}
@@ -145,7 +147,7 @@ function TodoDetail({ todo, group, onClose }: { todo: TodoItem; group: Group; on
             {dueDate && (
               <button onClick={() => { setDueDate(''); save({ dueDate: undefined }) }}
                 className="px-3 py-2.5 bg-[#0e1015] border border-white/[0.06] rounded-xl text-zinc-500 text-xs">
-                Löschen
+                {t('delete')}
               </button>
             )}
           </div>
@@ -154,7 +156,7 @@ function TodoDetail({ todo, group, onClose }: { todo: TodoItem; group: Group; on
         {/* Tags */}
         {availableTags.length > 0 && (
           <div className="mb-4">
-            <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block">Tags</label>
+            <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block">{t('todos.tags')}</label>
             <div className="flex gap-1.5 flex-wrap">
               {availableTags.map((tag) => {
                 const selected = selectedTags.includes(tag.name)
@@ -175,7 +177,7 @@ function TodoDetail({ todo, group, onClose }: { todo: TodoItem; group: Group; on
 
         {/* Links */}
         <div className="mb-4">
-          <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block">Verknüpfungen</label>
+          <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block">{t('todos.linked')}</label>
           <LinkedChips
             linkedItems={todo.linkedItems || []}
             group={group}
@@ -186,18 +188,18 @@ function TodoDetail({ todo, group, onClose }: { todo: TodoItem; group: Group; on
 
         {/* Description */}
         <div className="mb-6">
-          <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block">Beschreibung</label>
+          <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block">{t('todos.description')}</label>
           {editingDesc ? (
             <div>
               <textarea value={desc} onChange={(e) => setDesc(e.target.value)}
                 rows={3} autoFocus
                 className="w-full px-3 py-2.5 bg-[#0e1015] border border-white/[0.08] rounded-xl text-white text-sm outline-none focus:border-indigo-500/50 placeholder:text-zinc-600 resize-none"
-                placeholder="Details, Notizen..." />
+                placeholder={t('todos.desc_placeholder')} />
               <div className="flex justify-end gap-2 mt-2">
                 <button onClick={() => { setDesc(todo.description || ''); setEditingDesc(false) }}
-                  className="px-3 py-1.5 text-[11px] text-zinc-500">Abbrechen</button>
+                  className="px-3 py-1.5 text-[11px] text-zinc-500">{t('cancel')}</button>
                 <button onClick={() => { save({ description: desc.trim() || undefined }); setEditingDesc(false) }}
-                  className="px-3 py-1.5 bg-indigo-500 text-white rounded-lg text-[11px] font-semibold">Speichern</button>
+                  className="px-3 py-1.5 bg-indigo-500 text-white rounded-lg text-[11px] font-semibold">{t('save')}</button>
               </div>
             </div>
           ) : (
@@ -206,7 +208,7 @@ function TodoDetail({ todo, group, onClose }: { todo: TodoItem; group: Group; on
               {desc ? (
                 <span className="text-zinc-300">{desc}</span>
               ) : (
-                <span className="text-zinc-600">Beschreibung hinzufügen...</span>
+                <span className="text-zinc-600">{t('todos.add_desc')}</span>
               )}
             </button>
           )}
@@ -214,7 +216,7 @@ function TodoDetail({ todo, group, onClose }: { todo: TodoItem; group: Group; on
 
         {/* Comments */}
         <div className="mb-6">
-          <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block">Kommentare</label>
+          <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2 block">{t('todos.comments')}</label>
           {(todo.comments || []).length > 0 && (
             <div className="flex flex-col gap-2 mb-3">
               {(todo.comments || []).map((c) => (
@@ -241,7 +243,7 @@ function TodoDetail({ todo, group, onClose }: { todo: TodoItem; group: Group; on
                   setCommentText('')
                 }
               }}
-              placeholder="Kommentar schreiben..."
+              placeholder={t('todos.comment_placeholder')}
               className="flex-1 min-w-0 px-3 py-2.5 bg-[#0e1015] border border-white/[0.08] rounded-xl text-white text-sm outline-none focus:border-indigo-500/50 transition-colors placeholder:text-zinc-600"
             />
             <button
@@ -263,7 +265,7 @@ function TodoDetail({ todo, group, onClose }: { todo: TodoItem; group: Group; on
             className={cn('flex-1 py-3 rounded-xl font-bold text-sm active:scale-[0.98] transition-all',
               todo.done ? 'bg-zinc-700 text-zinc-300' : 'bg-emerald-500 text-white'
             )}>
-            {todo.done ? 'Wieder öffnen' : 'Erledigt ✓'}
+            {todo.done ? t('todos.reopen') : t('todos.mark_done')}
           </button>
           <button onClick={handleDelete}
             className="px-4 py-3 bg-red-500/10 text-red-400 rounded-xl active:scale-[0.98] transition-all">
@@ -289,6 +291,7 @@ function TodoDetail({ todo, group, onClose }: { todo: TodoItem; group: Group; on
 export function TodosPage() {
   const { group } = useOutletContext<{ group: Group }>()
   const { currentUser, addTodo, toggleTodo, addFeedItem } = useAppStore()
+  const tr = useT()
   const [text, setText] = useState('')
   const [assignee, setAssignee] = useState('')
   const [selectedTodo, setSelectedTodo] = useState<TodoItem | null>(null)
@@ -343,7 +346,7 @@ export function TodosPage() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-          placeholder="Neue Aufgabe..."
+          placeholder={tr('todos.new')}
           className="flex-1 min-w-0 px-3.5 py-3 bg-[#161822] border border-white/[0.08] rounded-xl text-white text-sm outline-none focus:border-indigo-500/50 transition-colors placeholder:text-zinc-600"
         />
         <select
@@ -351,7 +354,7 @@ export function TodosPage() {
           onChange={(e) => setAssignee(e.target.value)}
           className="w-24 px-2 py-3 bg-[#161822] border border-white/[0.08] rounded-xl text-zinc-400 text-xs outline-none"
         >
-          <option value="">Wer?</option>
+          <option value="">{tr('todos.who')}</option>
           {group.members.map((m) => (
             <option key={m} value={m}>{getUserName(m)}</option>
           ))}
@@ -366,7 +369,7 @@ export function TodosPage() {
 
       {/* Open */}
       <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2.5">
-        Offen ({open.length})
+        {tr('open')} ({open.length})
       </h4>
       <div className="flex flex-col gap-2 mb-6">
         <AnimatePresence>
@@ -429,7 +432,7 @@ export function TodosPage() {
           })}
         </AnimatePresence>
         {open.length === 0 && (
-          <p className="text-zinc-600 text-sm py-4 text-center">Alles erledigt 🎉</p>
+          <p className="text-zinc-600 text-sm py-4 text-center">{tr('todos.all_done')}</p>
         )}
       </div>
 
@@ -437,7 +440,7 @@ export function TodosPage() {
       {done.length > 0 && (
         <>
           <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2.5">
-            Erledigt ({done.length})
+            {tr('done')} ({done.length})
           </h4>
           <div className="flex flex-col gap-2">
             {done.map((t) => (

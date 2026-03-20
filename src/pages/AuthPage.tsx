@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { hapticLight } from '@/lib/haptics'
+import { useT } from '@/lib/i18n'
 
 export function AuthPage() {
+  const t = useT()
   const [mode, setMode] = useState<'login' | 'signup'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -23,7 +25,7 @@ export function AuthPage() {
 
     if (error) {
       setError(error.message === 'Invalid login credentials'
-        ? 'Email oder Passwort falsch'
+        ? t('auth.wrong_credentials')
         : error.message)
     }
     setLoading(false)
@@ -32,7 +34,7 @@ export function AuthPage() {
   const handleSignup = async () => {
     if (!email.trim() || !password || !name.trim()) return
     if (password.length < 6) {
-      setError('Passwort muss mind. 6 Zeichen haben')
+      setError(t('auth.password_min'))
       return
     }
     setLoading(true)
@@ -71,14 +73,14 @@ export function AuthPage() {
         <div className="text-center mb-8">
           <div className="text-6xl mb-3">👥</div>
           <h1 className="text-[28px] font-extrabold tracking-tight">Friends</h1>
-          <p className="text-zinc-500 text-[14px] mt-1">Die App für deine Crew</p>
+          <p className="text-zinc-500 text-[14px] mt-1">{t('auth.tagline')}</p>
         </div>
 
         {/* Email confirmation message */}
         {confirmEmail && (
           <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 mb-6 text-center">
             <span className="text-2xl">📧</span>
-            <p className="text-[14px] font-bold text-emerald-400 mt-2">Bestätigungs-Email gesendet!</p>
+            <p className="text-[14px] font-bold text-emerald-400 mt-2">{t('auth.confirm_sent')}</p>
             <p className="text-[12px] text-zinc-400 mt-1">
               Schau in dein Postfach ({email}) und klicke den Link um deinen Account zu aktivieren.
             </p>
@@ -95,13 +97,13 @@ export function AuthPage() {
             className={`flex-1 py-2.5 rounded-lg text-[13px] font-semibold transition-colors ${
               mode === 'login' ? 'bg-indigo-500/15 text-indigo-300' : 'text-zinc-500'
             }`}>
-            Login
+            {t('auth.login')}
           </button>
           <button onClick={() => { setMode('signup'); setError('') }}
             className={`flex-1 py-2.5 rounded-lg text-[13px] font-semibold transition-colors ${
               mode === 'signup' ? 'bg-indigo-500/15 text-indigo-300' : 'text-zinc-500'
             }`}>
-            Registrieren
+            {t('auth.signup')}
           </button>
         </div>
 
@@ -111,7 +113,7 @@ export function AuthPage() {
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Dein Name"
+              placeholder={t('auth.name')}
               className="w-full px-4 py-3.5 bg-[#161822] border border-white/[0.08] rounded-xl text-white text-[15px] outline-none focus:border-indigo-500/50 placeholder:text-zinc-600 mb-3"
             />
           </motion.div>
@@ -121,7 +123,7 @@ export function AuthPage() {
         <input
           value={email}
           onChange={(e) => { setEmail(e.target.value); setError('') }}
-          placeholder="Email"
+          placeholder={t('auth.email')}
           type="email"
           autoCapitalize="off"
           className="w-full px-4 py-3.5 bg-[#161822] border border-white/[0.08] rounded-xl text-white text-[15px] outline-none focus:border-indigo-500/50 placeholder:text-zinc-600 mb-3"
@@ -132,7 +134,7 @@ export function AuthPage() {
           value={password}
           onChange={(e) => { setPassword(e.target.value); setError('') }}
           onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-          placeholder="Passwort"
+          placeholder={t('auth.password')}
           type="password"
           className="w-full px-4 py-3.5 bg-[#161822] border border-white/[0.08] rounded-xl text-white text-[15px] outline-none focus:border-indigo-500/50 placeholder:text-zinc-600 mb-4"
         />
@@ -151,7 +153,7 @@ export function AuthPage() {
           disabled={loading || !email.trim() || !password || (mode === 'signup' && !name.trim())}
           className="w-full py-4 bg-indigo-500 text-white rounded-2xl font-bold text-[15px] active:scale-95 transition-all disabled:opacity-40"
         >
-          {loading ? '...' : mode === 'login' ? 'Einloggen' : 'Account erstellen'}
+          {loading ? '...' : mode === 'login' ? t('auth.login') : t('auth.signup')}
         </button>
       </motion.div>
     </div>

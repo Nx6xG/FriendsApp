@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { Avatar } from '@/components/ui/Avatar'
 import { getUserName } from '@/lib/users'
 import { ALL_TABS, DEFAULT_GROUP_PREFS } from '@/lib/tabs'
+import { useT } from '@/lib/i18n'
 import type { Group, MemberRole, TagDef } from '@/types'
 
 const EMOJIS = ['👥', '🏙️', '🏖️', '🎮', '🍕', '⚽', '🎵', '📸', '🧗', '🎲', '🏠', '💼', '🎓', '🏋️', '🚗', '🍺', '🎭', '🌍', '❤️', '🎪']
@@ -22,7 +23,8 @@ const ROLE_CONFIG: Record<MemberRole, { label: string; icon: typeof Shield; colo
 export function GroupSettingsPage() {
   const { group } = useOutletContext<{ group: Group }>()
   const navigate = useNavigate()
-  const { currentUser, updateGroupInfo, updateGroupSettings, updateMemberRole, deleteGroup, groupPrefs, updateGroupPrefs, generateInviteCode } = useAppStore()
+  const { currentUser, currentUserId, updateGroupInfo, updateGroupSettings, updateMemberRole, deleteGroup, groupPrefs, updateGroupPrefs, generateInviteCode } = useAppStore()
+  const t = useT()
   const [name, setName] = useState(group.name)
   const [emoji, setEmoji] = useState(group.emoji)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
@@ -37,7 +39,7 @@ export function GroupSettingsPage() {
 
   const tags = group.settings?.todoTags || []
   const memberRoles = group.memberRoles || group.members.map((m) => ({ name: m, role: 'member' as MemberRole, funRole: undefined }))
-  const isAdmin = memberRoles.find((m) => m.name === currentUser)?.role === 'admin'
+  const isAdmin = memberRoles.find((m) => m.name === currentUserId || m.name === currentUser)?.role === 'admin'
 
   const handleSaveName = () => {
     if (name.trim() && name.trim() !== group.name) {
@@ -132,18 +134,13 @@ export function GroupSettingsPage() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }}
           className="bg-[#161822] border border-white/[0.06] rounded-2xl p-4 mb-5">
           <button onClick={() => {
-            // Auto-generate code if none exists
-            if (!group.inviteCode) generateInviteCode(group.id)
-            // Small delay to ensure code is set
-            setTimeout(() => {
-              const code = useAppStore.getState().groups.find(g => g.id === group.id)?.inviteCode || group.inviteCode
-              const url = `${window.location.origin}/join/${code}`
-              if (navigator.share) {
-                navigator.share({ title: `${group.emoji} ${group.name}`, text: `Tritt unserer Gruppe "${group.name}" bei!`, url })
-              } else {
-                navigator.clipboard.writeText(url)
-              }
-            }, 100)
+            const code = group.inviteCode || generateInviteCode(group.id)
+            const url = `${window.location.origin}/join/${code}`
+            if (navigator.share) {
+              navigator.share({ title: `${group.emoji} ${group.name}`, text: `Tritt unserer Gruppe "${group.name}" bei!`, url })
+            } else {
+              navigator.clipboard.writeText(url)
+            }
           }}
             className="w-full py-3.5 bg-indigo-500 text-white rounded-xl font-bold text-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2">
             <Share2 size={16} />
@@ -261,20 +258,20 @@ export function GroupSettingsPage() {
                     <p className="text-[10px] text-zinc-600">"{member.funRole}"</p>
                   )}
                 </div>
-                {isAdmin && member.name !== currentUser ? (
+                {isAdmin && member.name !== currentUserId && member.name !== currentUser ? (
                   <select
                     value={member.role}
                     onChange={(e) => handleRoleChange(member.name, e.target.value as MemberRole)}
                     className={cn('px-2 py-1.5 rounded-lg text-[11px] font-semibold border border-white/[0.06] bg-[#161822] outline-none', roleCfg.color)}
                   >
-                    <option value="admin">Admin</option>
-                    <option value="member">Mitglied</option>
-                    <option value="viewer">Zuschauer</option>
+                    <option value="admin">{t('role.admin')}</option>
+                    <option value="member">{t('role.member')}</option>
+                    <option value="viewer">{t('role.viewer')}</option>
                   </select>
                 ) : (
                   <div className={cn('flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-semibold', roleCfg.color)}>
                     <Icon size={12} />
-                    {roleCfg.label}
+                    {t(`role.${member.role}`)}
                   </div>
                 )}
               </div>

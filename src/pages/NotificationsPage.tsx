@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Bell, Vote, Coins, Calendar, CheckSquare, Award, ChevronLeft, CheckCheck } from 'lucide-react'
 import { useAppStore } from '@/stores/appStore'
+import { useT } from '@/lib/i18n'
 import { timeAgo, cn } from '@/lib/utils'
 import type { Notification } from '@/types'
 
@@ -17,6 +18,7 @@ const NOTIF_CONFIG: Record<string, { icon: typeof Bell; color: string; bg: strin
 export function NotificationsPage() {
   const navigate = useNavigate()
   const { notifications, markNotificationRead, clearNotifications, groups } = useAppStore()
+  const t = useT()
   const unreadCount = notifications.filter((n) => !n.read).length
 
   const handleClick = (n: Notification) => {
@@ -34,15 +36,15 @@ export function NotificationsPage() {
           <ChevronLeft size={22} />
         </button>
         <div className="flex-1">
-          <h1 className="text-[16px] font-bold">Benachrichtigungen</h1>
+          <h1 className="text-[16px] font-bold">{t('notif.title')}</h1>
           {unreadCount > 0 && (
-            <p className="text-[11px] text-indigo-400">{unreadCount} ungelesen</p>
+            <p className="text-[11px] text-indigo-400">{unreadCount} {t('notif.unread')}</p>
           )}
         </div>
         {unreadCount > 0 && (
           <button onClick={clearNotifications}
             className="flex items-center gap-1.5 text-[11px] text-zinc-500 font-medium active:text-zinc-300 px-2.5 py-1.5 rounded-lg bg-white/[0.03]">
-            <CheckCheck size={13} /> Alle lesen
+            <CheckCheck size={13} /> {t('notif.mark_all_read')}
           </button>
         )}
         </div>
@@ -53,7 +55,7 @@ export function NotificationsPage() {
         {notifications.length === 0 && (
           <div className="text-center py-16">
             <Bell size={32} className="text-zinc-700 mx-auto mb-3" />
-            <p className="text-zinc-600 text-sm">Keine Benachrichtigungen</p>
+            <p className="text-zinc-600 text-sm">{t('notif.empty')}</p>
           </div>
         )}
         {notifications.map((n, i) => {

@@ -4,10 +4,12 @@ import { TrendingUp, Crown, Users, Award, Star } from 'lucide-react'
 import { currency, cn } from '@/lib/utils'
 import { Avatar } from '@/components/ui/Avatar'
 import { getUserName } from '@/lib/users'
+import { useT } from '@/lib/i18n'
 import type { Group } from '@/types'
 
 export function StatsPage() {
   const { group } = useOutletContext<{ group: Group }>()
+  const t = useT()
 
   // Spending stats
   const totalSpent = group.expenses.reduce((s, e) => s + e.amount, 0)
@@ -73,24 +75,24 @@ export function StatsPage() {
       >
         <div className="flex items-center gap-2 mb-3">
           <TrendingUp size={16} className="text-indigo-400" />
-          <span className="text-[11px] font-bold text-indigo-300/70 uppercase tracking-widest">Übersicht</span>
+          <span className="text-[11px] font-bold text-indigo-300/70 uppercase tracking-widest">{t('stats.overview')}</span>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <p className="text-2xl font-extrabold">{currency(totalSpent)}</p>
-            <p className="text-[11px] text-zinc-500">Gesamtausgaben</p>
+            <p className="text-[11px] text-zinc-500">{t('tab.expenses')}</p>
           </div>
           <div>
             <p className="text-2xl font-extrabold">{group.expenses.length}</p>
-            <p className="text-[11px] text-zinc-500">Ausgaben</p>
+            <p className="text-[11px] text-zinc-500">{t('tab.expenses')}</p>
           </div>
           <div>
-            <p className="text-2xl font-extrabold">{group.todos.filter((t) => t.done).length}/{group.todos.length}</p>
-            <p className="text-[11px] text-zinc-500">Aufgaben erledigt</p>
+            <p className="text-2xl font-extrabold">{group.todos.filter((todo) => todo.done).length}/{group.todos.length}</p>
+            <p className="text-[11px] text-zinc-500">{t('stats.tasks_done')}</p>
           </div>
           <div>
             <p className="text-2xl font-extrabold">{(group.events || []).length}</p>
-            <p className="text-[11px] text-zinc-500">Events</p>
+            <p className="text-[11px] text-zinc-500">{t('tab.events')}</p>
           </div>
         </div>
       </motion.div>
@@ -99,7 +101,7 @@ export function StatsPage() {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
         <div className="flex items-center gap-2 mb-3">
           <Crown size={14} className="text-amber-400" />
-          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Wer zahlt am meisten</span>
+          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">{t('stats.top_spender')}</span>
         </div>
         <div className="space-y-2">
           {topSpender.map(([name, amount], i) => (
@@ -136,7 +138,7 @@ export function StatsPage() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <div className="flex items-center gap-2 mb-3">
             <Award size={14} className="text-violet-400" />
-            <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Gruppen-Rollen</span>
+            <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">{t('stats.group_roles')}</span>
           </div>
           <div className="grid grid-cols-2 gap-2">
             {roles.filter((r) => r.funRole).map((r) => (
@@ -155,7 +157,7 @@ export function StatsPage() {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
         <div className="flex items-center gap-2 mb-3">
           <Users size={14} className="text-emerald-400" />
-          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Chat-Aktivität</span>
+          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">{t('stats.chat_activity')}</span>
         </div>
         <div className="flex gap-2">
           {topChatter.map(([name, count]) => {
@@ -186,7 +188,7 @@ export function StatsPage() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <div className="flex items-center gap-2 mb-3">
             <Star size={14} className="text-amber-400" />
-            <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Top Orte</span>
+            <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">{t('stats.top_places')}</span>
           </div>
           <div className="space-y-2">
             {[...places]

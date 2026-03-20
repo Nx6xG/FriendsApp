@@ -12,6 +12,7 @@ import { hapticLight } from '@/lib/haptics'
 import { getUserName } from '@/lib/users'
 import { ProPrompt } from '@/components/ui/ProGate'
 import { canUseFeature } from '@/lib/plans'
+import { useT } from '@/lib/i18n'
 import type { Group, ExpenseCategory } from '@/types'
 
 const EXPENSE_CATEGORIES: { key: ExpenseCategory; label: string; emoji: string }[] = [
@@ -92,6 +93,7 @@ function calcDebts(group: Group) {
 export function ExpensesPage() {
   const { group } = useOutletContext<{ group: Group }>()
   const { currentUser, addExpense, deleteExpense, updateExpense, addPayment, deletePayment, addFeedItem } = useAppStore()
+  const t = useT()
   const [showForm, setShowForm] = useState(false)
   const [title, setTitle] = useState('')
   const [amount, setAmount] = useState('')
@@ -183,11 +185,11 @@ export function ExpensesPage() {
       {/* Summary card */}
       <div className="bg-gradient-to-br from-indigo-600/20 to-violet-600/10 border border-indigo-500/20 rounded-2xl p-4 mb-5">
         <p className="text-[11px] text-indigo-300/70 uppercase tracking-widest font-semibold">
-          Gesamtausgaben
+          {t('expenses.total')}
         </p>
         <p className="text-3xl font-extrabold tracking-tight mt-1">{currency(totalSpent)}</p>
         <p className="text-xs text-zinc-500 mt-1">
-          {group.expenses.length} Ausgaben · {group.members.length} Personen
+          {group.expenses.length} {t('expenses.list_title')} · {group.members.length} {t('expenses.persons')}
         </p>
       </div>
 
@@ -195,32 +197,32 @@ export function ExpensesPage() {
       {transfers.length > 0 && (
         <div className="mb-5">
           <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2.5">
-            Offene Schulden
+            {t('expenses.open_debts')}
           </h4>
           <div className="flex flex-col gap-2">
-            {transfers.map((t, i) => (
+            {transfers.map((tr, i) => (
               <motion.div
-                key={`${t.from}-${t.to}`}
+                key={`${tr.from}-${tr.to}`}
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.05 }}
                 className="flex items-center gap-2 p-3 bg-[#161822] border border-white/[0.06] rounded-xl"
               >
-                <Avatar name={t.from} size={26} />
+                <Avatar name={tr.from} size={26} />
                 <span className="text-xs font-medium text-zinc-400 flex-1 truncate">
-                  {getUserName(t.from)}
+                  {getUserName(tr.from)}
                 </span>
                 <ArrowRight size={12} className="text-zinc-600 shrink-0" />
                 <span className="text-xs font-medium text-zinc-400 flex-1 truncate text-right">
-                  {getUserName(t.to)}
+                  {getUserName(tr.to)}
                 </span>
-                <Avatar name={t.to} size={26} />
+                <Avatar name={tr.to} size={26} />
                 <span className="text-sm font-bold text-amber-400 tabular-nums ml-1">
-                  {currency(t.amount)}
+                  {currency(tr.amount)}
                 </span>
-                <button onClick={() => handleMarkPaid(t.from, t.to, t.amount)}
+                <button onClick={() => handleMarkPaid(tr.from, tr.to, tr.amount)}
                   className="ml-1 p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-400 active:scale-95 transition-transform shrink-0"
-                  title="Als bezahlt markieren">
+                  title={t('expenses.mark_paid')}>
                   <Check size={12} />
                 </button>
               </motion.div>
@@ -231,7 +233,7 @@ export function ExpensesPage() {
 
       {transfers.length === 0 && group.expenses.length > 0 && (
         <div className="mb-5 p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-xl text-center">
-          <p className="text-[13px] text-emerald-400 font-medium">Alles ausgeglichen ✓</p>
+          <p className="text-[13px] text-emerald-400 font-medium">{t('expenses.all_settled')}</p>
         </div>
       )}
 
@@ -239,7 +241,7 @@ export function ExpensesPage() {
       {payments.length > 0 && (
         <div className="mb-5">
           <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2.5">
-            Zahlungen
+            {t('expenses.payments')}
           </h4>
           <div className="flex flex-col gap-1.5">
             {[...payments].reverse().map((p) => (
@@ -266,13 +268,13 @@ export function ExpensesPage() {
       {/* Expense list */}
       <div className="flex items-center justify-between mb-2.5">
         <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
-          Ausgaben
+          {t('expenses.list_title')}
         </h4>
         <button
           onClick={() => setShowForm(!showForm)}
           className="text-indigo-400 text-xs font-semibold flex items-center gap-1 active:opacity-70"
         >
-          <Plus size={14} /> Neu
+          <Plus size={14} /> {t('new')}
         </button>
       </div>
 
@@ -289,7 +291,7 @@ export function ExpensesPage() {
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Wofür?"
+                placeholder={t('expenses.what_for')}
                 autoFocus
                 className="w-full px-3 py-2.5 bg-[#0e1015] border border-white/[0.08] rounded-xl text-white text-sm outline-none focus:border-indigo-500/50 placeholder:text-zinc-600"
               />
@@ -297,7 +299,7 @@ export function ExpensesPage() {
                 <input
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder="Betrag (€)"
+                  placeholder={t('expenses.amount')}
                   type="number"
                   step="0.01"
                   inputMode="decimal"
@@ -318,7 +320,7 @@ export function ExpensesPage() {
 
               {/* Split mode toggle */}
               <div className="flex items-center justify-between">
-                <p className="text-[11px] text-zinc-500">Aufteilen zwischen:</p>
+                <p className="text-[11px] text-zinc-500">{t('expenses.split_between')}</p>
                 <button onClick={() => {
                     if (!canUseFeature('customSplit')) { setShowProPrompt('Individueller Split'); return }
                     setUseCustomSplit(!useCustomSplit)
@@ -327,7 +329,7 @@ export function ExpensesPage() {
                     useCustomSplit ? 'text-indigo-300 bg-indigo-500/10' : 'text-zinc-600'
                   )}>
                   {useCustomSplit ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
-                  {useCustomSplit ? 'Individuell' : 'Gleichmäßig'}
+                  {useCustomSplit ? t('expenses.custom_split') : t('expenses.equal_split')}
                   {!canUseFeature('customSplit') && <span className="text-[9px] text-indigo-400 ml-1">⚡Pro</span>}
                 </button>
               </div>
@@ -378,7 +380,7 @@ export function ExpensesPage() {
                       <p className={cn('text-[11px] text-right tabular-nums',
                         Math.abs(diff) < 0.01 ? 'text-emerald-400' : 'text-amber-400'
                       )}>
-                        {Math.abs(diff) < 0.01 ? 'Passt ✓' : `Differenz: ${currency(diff)}`}
+                        {Math.abs(diff) < 0.01 ? t('expenses.fits') : `${t('expenses.difference')} ${currency(diff)}`}
                       </p>
                     )
                   })()}
@@ -386,21 +388,21 @@ export function ExpensesPage() {
               )}
 
               <div>
-                <p className="text-[11px] text-zinc-500 mb-2">Kategorie:</p>
+                <p className="text-[11px] text-zinc-500 mb-2">{t('expenses.category')}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {EXPENSE_CATEGORIES.map((c) => (
                     <button key={c.key} onClick={() => setCategory(c.key)}
                       className={cn('px-2.5 py-2 rounded-lg text-[11px] font-medium transition-colors',
                         category === c.key ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'bg-[#0e1015] text-zinc-500 border border-white/[0.06]'
                       )}>
-                      {c.emoji} {c.label}
+                      {c.emoji} {t(`expenses.cat_${c.key}`)}
                     </button>
                   ))}
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
-                <p className="text-[11px] text-zinc-500">Wiederkehrend:</p>
+                <p className="text-[11px] text-zinc-500">{t('expenses.recurring')}</p>
                 <div className="flex gap-1.5">
                   {(['none', 'weekly', 'monthly'] as const).map((r) => (
                     <button key={r} onClick={() => {
@@ -410,7 +412,7 @@ export function ExpensesPage() {
                       className={cn('px-2.5 py-2 rounded-lg text-[11px] font-medium transition-colors',
                         recurring === r ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'bg-[#0e1015] text-zinc-500 border border-white/[0.06]'
                       )}>
-                      {r === 'none' ? 'Einmalig' : r === 'weekly' ? 'Wöchentlich' : 'Monatlich'}
+                      {r === 'none' ? t('expenses.once') : r === 'weekly' ? t('expenses.weekly') : t('expenses.monthly')}
                       {r !== 'none' && !canUseFeature('recurringExpenses') && <span className="text-[9px] text-indigo-400 ml-1">⚡Pro</span>}
                     </button>
                   ))}
@@ -422,7 +424,7 @@ export function ExpensesPage() {
                 disabled={!title.trim() || !amount || splitWith.length === 0 || (useCustomSplit && Math.abs(splitWith.reduce((s, m) => s + (parseFloat(customAmounts[m] || '0') || 0), 0) - parseFloat(amount || '0')) > 0.01)}
                 className="w-full py-2.5 bg-indigo-500 text-white rounded-xl font-bold text-sm active:scale-[0.98] transition-all disabled:opacity-30"
               >
-                Hinzufügen
+                {t('expenses.add')}
               </button>
             </div>
           </motion.div>
@@ -431,7 +433,7 @@ export function ExpensesPage() {
 
       <div className="flex flex-col gap-2">
         {group.expenses.length === 0 && (
-          <p className="text-zinc-600 text-sm py-6 text-center">Noch keine Ausgaben</p>
+          <p className="text-zinc-600 text-sm py-6 text-center">{t('expenses.empty')}</p>
         )}
         {[...group.expenses].reverse().map((e, i) => (
           <motion.div
@@ -448,8 +450,8 @@ export function ExpensesPage() {
                 {e.recurring && e.recurring !== 'none' && <span className="text-[10px] text-indigo-400/50 ml-1">🔄</span>}
               </p>
               <p className="text-[11px] text-zinc-600 mt-0.5">
-                {getUserName(e.paidById)} · {e.date} · {e.splitBetween.length} Pers.
-                {e.customAmounts && <span className="text-indigo-400/50 ml-1">· individuell</span>}
+                {getUserName(e.paidById)} · {e.date} · {e.splitBetween.length} {t('expenses.persons')}
+                {e.customAmounts && <span className="text-indigo-400/50 ml-1">· {t('expenses.custom_split')}</span>}
               </p>
               {e.linkedItems && e.linkedItems.length > 0 && (
                 <div className="mt-1">

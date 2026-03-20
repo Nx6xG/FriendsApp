@@ -6,11 +6,21 @@ import { useAppStore } from '@/stores/appStore'
 import { uid, cn } from '@/lib/utils'
 import { Avatar } from '@/components/ui/Avatar'
 import { getAuthorId, isMe, getUserName } from '@/lib/users'
+import { useT } from '@/lib/i18n'
 import type { Group, PlaceRating } from '@/types'
 
 const CATEGORIES = ['Restaurant', 'Café', 'Bar', 'Aktivität', 'Einkauf', 'Sonstiges']
 const CATEGORY_EMOJIS: Record<string, string> = {
   Restaurant: '🍽️', Café: '☕', Bar: '🍸', Aktivität: '🎯', Einkauf: '🛒', Sonstiges: '📌',
+}
+
+const CAT_KEYS: Record<string, string> = {
+  Restaurant: 'places.cat_restaurant',
+  Café: 'places.cat_cafe',
+  Bar: 'places.cat_bar',
+  Aktivität: 'places.cat_activity',
+  Einkauf: 'places.cat_shopping',
+  Sonstiges: 'places.cat_other',
 }
 
 type SortOption = 'newest' | 'best' | 'worst' | 'alpha'
@@ -80,6 +90,7 @@ function Stars({ count, max = 5, size = 14, interactive, onChange }: { count: nu
 export function PlacesPage() {
   const { group } = useOutletContext<{ group: Group }>()
   const { currentUser, addPlace, addPlaceRating, addFeedItem } = useAppStore()
+  const t = useT()
   const [showForm, setShowForm] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [ratingPlace, setRatingPlace] = useState<string | null>(null)
@@ -152,9 +163,9 @@ export function PlacesPage() {
   return (
     <div className="p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Orte</h3>
+        <h3 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">{t('tab.places')}</h3>
         <button onClick={() => setShowForm(!showForm)} className="text-indigo-400 text-xs font-semibold flex items-center gap-1">
-          {showForm ? <><X size={14} /> Abbrechen</> : <><Plus size={14} /> Neu</>}
+          {showForm ? <><X size={14} /> {t('cancel')}</> : <><Plus size={14} /> {t('new')}</>}
         </button>
       </div>
 
@@ -171,7 +182,7 @@ export function PlacesPage() {
                 : 'bg-[#0e1015] text-zinc-500 border border-white/[0.06]'
             )}
           >
-            {opt.label}
+            {t(`places.sort_${opt.key}`)}
           </button>
         ))}
       </div>
@@ -181,21 +192,21 @@ export function PlacesPage() {
         {showForm && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mb-5">
             <div className="bg-[#161822] border border-white/[0.06] rounded-2xl p-4 space-y-3">
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name des Ortes" autoFocus
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('places.name')} autoFocus
                 className="w-full px-3 py-2.5 bg-[#0e1015] border border-white/[0.08] rounded-xl text-white text-sm outline-none focus:border-indigo-500/50 placeholder:text-zinc-600" />
               <div className="flex gap-2 flex-wrap">
                 {CATEGORIES.map((c) => (
                   <button key={c} onClick={() => setCategory(c)}
                     className={cn('px-3 py-2.5 rounded-lg text-xs font-medium transition-colors',
                       category === c ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'bg-[#0e1015] text-zinc-500 border border-white/[0.06]'
-                    )}>{CATEGORY_EMOJIS[c]} {c}</button>
+                    )}>{CATEGORY_EMOJIS[c]} {t(CAT_KEYS[c])}</button>
                 ))}
               </div>
-              <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="📍 Adresse (optional)"
+              <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder={t('places.address')}
                 className="w-full px-3 py-2.5 bg-[#0e1015] border border-white/[0.08] rounded-xl text-white text-sm outline-none focus:border-indigo-500/50 placeholder:text-zinc-600" />
               <button onClick={handleAddPlace} disabled={!name.trim()}
                 className="w-full py-2.5 bg-indigo-500 text-white rounded-xl font-bold text-sm active:scale-[0.98] disabled:opacity-30">
-                Ort hinzufügen
+                {t('places.add')}
               </button>
             </div>
           </motion.div>
@@ -272,37 +283,37 @@ export function PlacesPage() {
                           onClick={() => openRatingForm(place.id)}
                           className="w-full py-2.5 text-center text-[12px] text-indigo-400 font-semibold border border-dashed border-indigo-500/20 rounded-xl active:bg-indigo-500/5"
                         >
-                          {hasRated ? 'Bewertung ändern' : '+ Bewertung abgeben'}
+                          {hasRated ? t('places.change_rating') : t('places.add_rating')}
                         </button>
                       )}
 
                       {isRating && (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#0e1015] rounded-xl p-3 space-y-2.5">
                           <div className="flex items-center justify-between">
-                            <span className="text-[12px] text-zinc-400">Deine Bewertung:</span>
+                            <span className="text-[12px] text-zinc-400">{t('places.your_rating')}:</span>
                             <Stars count={ratingScore} size={18} interactive onChange={setRatingScore} />
                           </div>
                           <input
                             value={ratingComment}
                             onChange={(e) => setRatingComment(e.target.value)}
-                            placeholder="Kommentar (optional)"
+                            placeholder={t('places.comment')}
                             className="w-full px-3 py-2 bg-[#161822] border border-white/[0.08] rounded-lg text-white text-[12px] outline-none placeholder:text-zinc-600"
                           />
                           <div className="flex gap-2">
                             <button onClick={() => { setRatingPlace(null); setRatingScore(0); setRatingComment('') }}
                               className="flex-1 py-2 text-[12px] text-zinc-500 rounded-lg border border-white/[0.06]">
-                              Abbrechen
+                              {t('cancel')}
                             </button>
                             <button onClick={() => handleRate(place.id)} disabled={ratingScore === 0}
                               className="flex-1 py-2 text-[12px] text-white font-semibold bg-indigo-500 rounded-lg disabled:opacity-30">
-                              {hasRated ? 'Aktualisieren' : 'Bewerten'}
+                              {hasRated ? t('places.update_rating') : t('places.rate')}
                             </button>
                           </div>
                         </motion.div>
                       )}
 
                       <p className="text-[10px] text-zinc-700">
-                        Hinzugefügt von {getUserName(place.addedBy)}{place.visitedAt && ` · Besucht am ${place.visitedAt}`}
+                        {t('places.added_by')} {getUserName(place.addedBy)}{place.visitedAt && ` · ${t('places.visited_at')} ${place.visitedAt}`}
                       </p>
                     </div>
                   </motion.div>
@@ -314,7 +325,7 @@ export function PlacesPage() {
       </div>
 
       {places.length === 0 && (
-        <p className="text-zinc-600 text-sm text-center py-12">Noch keine Orte hinzugefügt 📍</p>
+        <p className="text-zinc-600 text-sm text-center py-12">{t('places.empty')} 📍</p>
       )}
     </div>
   )

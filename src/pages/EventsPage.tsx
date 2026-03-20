@@ -12,6 +12,7 @@ import { getAuthorId, isMe } from '@/lib/users'
 import { canUseFeature } from '@/lib/plans'
 import { ProPrompt } from '@/components/ui/ProGate'
 import { LinkPicker } from '@/components/ui/LinkPicker'
+import { useT } from '@/lib/i18n'
 import type { Group, GroupEvent } from '@/types'
 
 function generateICS(event: GroupEvent): string {
@@ -44,8 +45,6 @@ function downloadICS(event: GroupEvent) {
   window.open(dataUri, '_blank')
 }
 
-const MONTH_NAMES = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember']
-const DAY_HEADERS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
 
 function getMonthGrid(year: number, month: number): (number | null)[][] {
   const firstDay = new Date(year, month, 1)
@@ -73,6 +72,7 @@ function dateStr(year: number, month: number, day: number): string {
 export function EventsPage() {
   const { group } = useOutletContext<{ group: Group }>()
   const { currentUser, addEvent, deleteEvent, toggleRSVP, addFeedItem, updateEvent } = useAppStore()
+  const t = useT()
   const [showForm, setShowForm] = useState(false)
   const [title, setTitle] = useState('')
   const [emoji, setEmoji] = useState('📅')
@@ -137,7 +137,7 @@ export function EventsPage() {
   const emojiOptions = ['📅', '🎳', '🍷', '🥾', '🎬', '🍕', '🎮', '🏖️', '🎉', '🥐', '⚽', '🎵']
 
   const EventCard = ({ event, isPast, onLink }: { event: GroupEvent; isPast?: boolean; onLink?: () => void }) => {
-    const going = event.attendees.includes(currentUser)
+    const going = event.attendees.some(isMe)
     return (
       <motion.div
         layout
@@ -159,9 +159,9 @@ export function EventsPage() {
           <div className="flex-1">
             <p className="text-[13px] font-bold">{event.title}</p>
             <p className="text-[11px] text-zinc-500">
-              {isToday(event.date) ? 'Heute' : isTomorrow(event.date) ? 'Morgen' : formatDate(event.date)}
+              {isToday(event.date) ? t('events.today') : isTomorrow(event.date) ? t('events.tomorrow') : formatDate(event.date)}
               {event.recurrence && event.recurrence !== 'none' && (
-                <span className="text-[9px] text-zinc-500 ml-1">🔄 {event.recurrence === 'weekly' ? 'Wöchentl.' : event.recurrence === 'biweekly' ? 'Alle 2 W.' : 'Monatl.'}</span>
+                <span className="text-[9px] text-zinc-500 ml-1">🔄 {event.recurrence === 'weekly' ? t('expenses.weekly') : event.recurrence === 'biweekly' ? t('events.biweekly') : t('expenses.monthly')}</span>
               )}
             </p>
           </div>
@@ -188,7 +188,7 @@ export function EventsPage() {
         <div className="px-4 py-3 space-y-2">
           <div className="flex items-center gap-2 text-[12px] text-zinc-400">
             <Clock size={13} className="text-zinc-600" />
-            {event.time} Uhr
+            {event.time} {t('events.oclock')}
           </div>
           {event.location && (
             <div className="flex items-center gap-2 text-[12px] text-zinc-400">
@@ -212,7 +212,7 @@ export function EventsPage() {
 
             {!isPast && (
               <button
-                onClick={() => toggleRSVP(group.id, event.id, currentUser)}
+                onClick={() => toggleRSVP(group.id, event.id, getAuthorId())}
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-semibold transition-colors',
                   going
@@ -220,7 +220,7 @@ export function EventsPage() {
                     : 'bg-white/[0.04] text-zinc-500 border border-white/[0.08] active:bg-indigo-500/10 active:text-indigo-400'
                 )}
               >
-                {going ? <><Check size={12} /> Dabei</> : <><Plus size={12} /> Zusagen</>}
+                {going ? <><Check size={12} /> {t('events.attending')}</> : <><Plus size={12} /> {t('events.rsvp')}</>}
               </button>
             )}
           </div>
@@ -249,7 +249,7 @@ export function EventsPage() {
   return (
     <div className="p-4">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Events</h3>
+        <h3 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">{t('tab.events')}</h3>
         <div className="flex items-center gap-3">
           {/* View toggle */}
           <div className="flex items-center bg-[#161822] border border-white/[0.06] rounded-lg overflow-hidden">
@@ -273,7 +273,7 @@ export function EventsPage() {
             </button>
           </div>
           <button onClick={() => setShowForm(!showForm)} className="text-indigo-400 text-xs font-semibold flex items-center gap-1">
-            {showForm ? <><X size={14} /> Abbrechen</> : <><Plus size={14} /> Neu</>}
+            {showForm ? <><X size={14} /> {t('cancel')}</> : <><Plus size={14} /> {t('new')}</>}
           </button>
         </div>
       </div>
@@ -291,7 +291,7 @@ export function EventsPage() {
                   )}>{e}</button>
                 ))}
               </div>
-              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Event Name" autoFocus
+              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('events.name')} autoFocus
                 className="w-full px-3 py-2.5 bg-[#0e1015] border border-white/[0.08] rounded-xl text-white text-sm outline-none focus:border-indigo-500/50 placeholder:text-zinc-600" />
               <div className="flex gap-2">
                 <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
@@ -299,12 +299,12 @@ export function EventsPage() {
                 <input type="time" value={time} onChange={(e) => setTime(e.target.value)}
                   className="w-28 px-3 py-2.5 bg-[#0e1015] border border-white/[0.08] rounded-xl text-zinc-400 text-sm outline-none" />
               </div>
-              <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="📍 Ort (optional)"
+              <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder={t('events.location')}
                 className="w-full px-3 py-2.5 bg-[#0e1015] border border-white/[0.08] rounded-xl text-white text-sm outline-none focus:border-indigo-500/50 placeholder:text-zinc-600" />
-              <input value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Beschreibung (optional)"
+              <input value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={t('events.desc')}
                 className="w-full px-3 py-2.5 bg-[#0e1015] border border-white/[0.08] rounded-xl text-white text-sm outline-none focus:border-indigo-500/50 placeholder:text-zinc-600" />
               <div className="flex items-center justify-between">
-                <p className="text-[11px] text-zinc-500">Wiederholen:</p>
+                <p className="text-[11px] text-zinc-500">{t('events.repeat')}:</p>
                 <div className="flex gap-1.5">
                   {(['none', 'weekly', 'biweekly', 'monthly'] as const).map((r) => (
                     <button key={r} onClick={() => {
@@ -314,7 +314,7 @@ export function EventsPage() {
                       className={cn('px-2.5 py-2 rounded-lg text-[11px] font-medium transition-colors',
                         recurrence === r ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'bg-[#0e1015] text-zinc-500 border border-white/[0.06]'
                       )}>
-                      {r === 'none' ? 'Einmalig' : r === 'weekly' ? 'Wöchentl.' : r === 'biweekly' ? 'Alle 2 W.' : 'Monatlich'}
+                      {r === 'none' ? t('expenses.once') : r === 'weekly' ? t('expenses.weekly') : r === 'biweekly' ? t('events.biweekly') : t('expenses.monthly')}
                       {r !== 'none' && !canUseFeature('recurringExpenses') && <span className="text-[9px] text-indigo-400 ml-1">⚡Pro</span>}
                     </button>
                   ))}
@@ -322,7 +322,7 @@ export function EventsPage() {
               </div>
               <button onClick={handleAdd} disabled={!title.trim() || !date}
                 className="w-full py-2.5 bg-indigo-500 text-white rounded-xl font-bold text-sm active:scale-[0.98] disabled:opacity-30">
-                Event erstellen
+                {t('events.create')}
               </button>
             </div>
           </motion.div>
@@ -334,7 +334,7 @@ export function EventsPage() {
           {/* Upcoming */}
           {upcoming.length > 0 && (
             <div className="mb-6">
-              <h4 className="text-[11px] font-bold text-emerald-400/70 uppercase tracking-widest mb-3">Anstehend</h4>
+              <h4 className="text-[11px] font-bold text-emerald-400/70 uppercase tracking-widest mb-3">{t('events.upcoming')}</h4>
               <div className="flex flex-col gap-3">
                 {upcoming.map((e) => <EventCard key={e.id} event={e} onLink={() => setLinkingEventId(e.id)} />)}
               </div>
@@ -344,7 +344,7 @@ export function EventsPage() {
           {/* Past */}
           {past.length > 0 && (
             <div>
-              <h4 className="text-[11px] font-bold text-zinc-600 uppercase tracking-widest mb-3">Vergangen</h4>
+              <h4 className="text-[11px] font-bold text-zinc-600 uppercase tracking-widest mb-3">{t('events.past')}</h4>
               <div className="flex flex-col gap-3">
                 {past.map((e) => <EventCard key={e.id} event={e} isPast />)}
               </div>
@@ -352,7 +352,7 @@ export function EventsPage() {
           )}
 
           {events.length === 0 && (
-            <p className="text-zinc-600 text-sm text-center py-12">Noch keine Events geplant 📅</p>
+            <p className="text-zinc-600 text-sm text-center py-12">{t('events.empty')} 📅</p>
           )}
         </>
       ) : (
@@ -364,7 +364,7 @@ export function EventsPage() {
               <ChevronLeft size={18} />
             </button>
             <h4 className="text-sm font-bold text-zinc-300">
-              {MONTH_NAMES[calMonth]} {calYear}
+              {Array.from({length: 12}, (_, i) => t(`events.month_${i}`))[calMonth]} {calYear}
             </h4>
             <button onClick={nextMonth} className="text-zinc-500 active:text-zinc-300 p-2">
               <ChevronRight size={18} />
@@ -373,8 +373,8 @@ export function EventsPage() {
 
           {/* Day headers */}
           <div className="grid grid-cols-7 mb-1">
-            {DAY_HEADERS.map((d) => (
-              <div key={d} className="text-center text-[10px] font-bold text-zinc-600 uppercase py-1">
+            {Array.from({length: 7}, (_, i) => t(`events.day_${i}`)).map((d, i) => (
+              <div key={i} className="text-center text-[10px] font-bold text-zinc-600 uppercase py-1">
                 {d}
               </div>
             ))}
@@ -421,7 +421,7 @@ export function EventsPage() {
           {selectedDate && selectedEvents.length > 0 && (
             <div className="mt-4">
               <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-3">
-                {isToday(selectedDate) ? 'Heute' : formatDate(selectedDate)}
+                {isToday(selectedDate) ? t('events.today') : formatDate(selectedDate)}
               </h4>
               <div className="flex flex-col gap-3">
                 {selectedEvents.map((e) => {
@@ -433,7 +433,7 @@ export function EventsPage() {
           )}
 
           {selectedDate && selectedEvents.length === 0 && (
-            <p className="text-zinc-600 text-xs text-center py-6">Keine Events an diesem Tag</p>
+            <p className="text-zinc-600 text-xs text-center py-6">{t('events.none_today')}</p>
           )}
         </div>
       )}

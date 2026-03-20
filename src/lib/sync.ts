@@ -1,7 +1,8 @@
 import { supabase } from './supabase'
 import { useAppStore } from '@/stores/appStore'
 import { fetchUserGroups, fetchProfile, fetchNotifications, fetchGroupPrefs } from './supabaseData'
-import { registerUser } from './users'
+import { registerUser, clearNameCache } from './users'
+import { log, logError } from './logger'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
 let channels: RealtimeChannel[] = []
@@ -17,7 +18,7 @@ export async function initSync(userId: string) {
   syncing = true
 
   try {
-    console.log('[Sync] Starting for user:', userId)
+    log('[Sync] Starting for user:', userId)
 
     const [groups, profile, notifications, groupPrefs] = await Promise.all([
       fetchUserGroups(userId),
@@ -26,7 +27,7 @@ export async function initSync(userId: string) {
       fetchGroupPrefs(userId),
     ])
 
-    console.log('[Sync] Fetched:', groups.length, 'groups')
+    log('[Sync] Fetched:', groups.length, 'groups')
 
     const store = useAppStore.getState()
 
@@ -54,15 +55,15 @@ export async function initSync(userId: string) {
     })
 
     // Start realtime
-    const groupIds = (groups.length > 0 ? groups : store.groups).map((g) => g.id)
-    if (groupIds.length > 0) {
-      subscribeToChanges(userId, groupIds)
+    const hasGroups = (groups.length > 0 ? groups : store.groups).length > 0
+    if (hasGroups) {
+      subscribeToChanges(userId)
     }
 
     synced = true
-    console.log('[Sync] Complete')
+    log('[Sync] Complete')
   } catch (e) {
-    console.error('[Sync] Failed:', e)
+    logError('[Sync] Failed:', e)
   } finally {
     syncing = false
   }
@@ -82,7 +83,7 @@ export async function resync() {
 /**
  * Subscribe to realtime changes for all group data.
  */
-function subscribeToChanges(userId: string, groupIds: string[]) {
+function subscribeToChanges(userId: string) {
   cleanup()
 
   // Single channel for all group data changes
@@ -130,13 +131,42 @@ function resyncQuiet() {
   resyncTimer = setTimeout(() => {
     const userId = useAppStore.getState().currentUserId
     if (!userId || useAppStore.getState().demoMode) return
-    // Fetch fresh data without resetting synced flag
-    fetchUserGroups(userId).then((groups) => {
-      if (groups.length > 0) {
-        useAppStore.setState({ groups })
-      }
-    }).catch(console.error)
+    // Fetch fresh data and MERGE with local state to preserve optimistic updates
+    fetchUserGroups(userId).then((serverGroups) => {
+      if (serverGroups.length === 0) return
+      const localGroups = useAppStore.getState().groups
+      // Merge: use server data as base, but keep any local items not yet on server
+      const merged = serverGroups.map((sg) => {
+        const lg = localGroups.find((l) => l.id === sg.id)
+        if (!lg) return sg
+        return {
+          ...sg,
+          // Keep local items that don't exist on server yet (optimistic inserts)
+          todos: mergeById(sg.todos, lg.todos),
+          expenses: mergeById(sg.expenses, lg.expenses),
+          suggestions: mergeById(sg.suggestions, lg.suggestions),
+          messages: mergeById(sg.messages, lg.messages),
+          events: mergeById(sg.events || [], lg.events || []),
+          places: mergeById(sg.places || [], lg.places || []),
+          mapPins: mergeById(sg.mapPins || [], lg.mapPins || []),
+          feed: mergeById(sg.feed, lg.feed),
+          payments: mergeById(sg.payments || [], lg.payments || []),
+          liveLocations: sg.liveLocations, // always use server for live data
+        }
+      })
+      // Also keep local-only groups (not yet on server)
+      const serverIds = new Set(serverGroups.map((g) => g.id))
+      const localOnly = localGroups.filter((g) => !serverIds.has(g.id))
+      useAppStore.setState({ groups: [...merged, ...localOnly] })
+    }).catch(logError)
   }, 500) // Wait 500ms to batch rapid changes
+}
+
+/** Merge two arrays by ID: server wins for existing items, local-only items are kept */
+function mergeById<T extends { id: string }>(server: T[], local: T[]): T[] {
+  const serverIds = new Set(server.map((s) => s.id))
+  const localOnly = local.filter((l) => !serverIds.has(l.id))
+  return [...server, ...localOnly]
 }
 
 /**
@@ -148,6 +178,7 @@ export function cleanup() {
   synced = false
   syncing = false
   if (resyncTimer) clearTimeout(resyncTimer)
+  clearNameCache()
 }
 
 /**

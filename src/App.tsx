@@ -5,6 +5,7 @@ import { useAppStore } from '@/stores/appStore'
 import { supabase } from '@/lib/supabase'
 import { initSync, cleanup } from '@/lib/sync'
 import type { Session } from '@supabase/supabase-js'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { AuthPage } from '@/pages/AuthPage'
 import { OnboardingPage } from '@/pages/OnboardingPage'
 import { HomePage } from '@/pages/HomePage'
@@ -155,14 +156,16 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <ThemeProvider>
-        <SplashGate>
-          <div className="flex flex-col flex-1 min-h-0 h-full bg-[#0a0c12] text-zinc-100 overflow-hidden">
-            <AppRoutes />
-          </div>
-        </SplashGate>
-      </ThemeProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <ThemeProvider>
+          <SplashGate>
+            <div className="flex flex-col flex-1 min-h-0 h-full bg-[#0a0c12] text-zinc-100 overflow-hidden">
+              <AppRoutes />
+            </div>
+          </SplashGate>
+        </ThemeProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   )
 }

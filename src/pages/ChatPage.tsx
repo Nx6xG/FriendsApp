@@ -8,6 +8,7 @@ import { hapticLight } from '@/lib/haptics'
 import { getAuthorId, isMe, getUserName } from '@/lib/users'
 import { Avatar } from '@/components/ui/Avatar'
 import { LinkPicker } from '@/components/ui/LinkPicker'
+import { useT } from '@/lib/i18n'
 import type { Group, ChatEmbed, ChatMessage } from '@/types'
 
 const REACTIONS = ['❤️', '😂', '👍', '😮', '😢', '🔥']
@@ -15,7 +16,8 @@ const REACTIONS = ['❤️', '😂', '👍', '😮', '😢', '🔥']
 // ─── Embed Cards ────────────────────────────────────────────────
 
 function PollEmbed({ message, groupId }: { message: ChatMessage; groupId: string }) {
-  const { currentUser, voteChatPoll } = useAppStore()
+  const { voteChatPoll } = useAppStore()
+  const t = useT()
   const embed = message.embed!
   const options = embed.pollOptions || []
   const totalVotes = options.reduce((s, o) => s + o.votes.length, 0)
@@ -24,15 +26,15 @@ function PollEmbed({ message, groupId }: { message: ChatMessage; groupId: string
     <div className="mt-2 bg-[#0e1015]/60 rounded-xl p-3 border border-violet-500/15">
       <div className="flex items-center gap-1.5 mb-2">
         <Vote size={12} className="text-violet-400" />
-        <span className="text-[10px] font-bold text-violet-400 uppercase tracking-wider">Abstimmung</span>
+        <span className="text-[10px] font-bold text-violet-400 uppercase tracking-wider">{t('chat.poll')}</span>
       </div>
       <p className="text-[12px] font-semibold mb-2.5">{embed.pollQuestion}</p>
       <div className="space-y-1.5">
         {options.map((opt) => {
-          const voted = opt.votes.includes(currentUser)
+          const voted = opt.votes.some(isMe)
           const pct = totalVotes > 0 ? Math.round((opt.votes.length / totalVotes) * 100) : 0
           return (
-            <button key={opt.id} onClick={() => voteChatPoll(groupId, message.id, opt.id, currentUser)}
+            <button key={opt.id} onClick={() => voteChatPoll(groupId, message.id, opt.id, getAuthorId())}
               className="w-full relative overflow-hidden rounded-lg text-left">
               <div className="absolute inset-y-0 left-0 bg-violet-500/10 transition-all duration-500"
                 style={{ width: `${pct}%` }} />
@@ -55,21 +57,22 @@ function PollEmbed({ message, groupId }: { message: ChatMessage; groupId: string
           )
         })}
       </div>
-      <p className="text-[10px] text-zinc-600 mt-2">{totalVotes} Stimme{totalVotes !== 1 && 'n'}</p>
+      <p className="text-[10px] text-zinc-600 mt-2">{totalVotes} {totalVotes !== 1 ? t('chat.votes_plural') : t('chat.votes')}</p>
     </div>
   )
 }
 
 function EventEmbed({ message, groupId }: { message: ChatMessage; groupId: string }) {
-  const { currentUser, rsvpChatEvent } = useAppStore()
+  const { rsvpChatEvent } = useAppStore()
+  const t = useT()
   const embed = message.embed!
-  const going = embed.eventAttendees?.includes(currentUser) || false
+  const going = embed.eventAttendees?.some(isMe) || false
 
   return (
     <div className="mt-2 bg-[#0e1015]/60 rounded-xl p-3 border border-indigo-500/15">
       <div className="flex items-center gap-1.5 mb-2">
         <Calendar size={12} className="text-indigo-400" />
-        <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Event-Einladung</span>
+        <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">{t('chat.event_invite')}</span>
       </div>
       <p className="text-[13px] font-semibold">{embed.eventTitle}</p>
       <p className="text-[11px] text-zinc-500 mt-1">
@@ -78,15 +81,15 @@ function EventEmbed({ message, groupId }: { message: ChatMessage; groupId: strin
       <div className="flex items-center justify-between mt-2.5">
         <div className="flex -space-x-1.5">
           {(embed.eventAttendees || []).map((a) => <Avatar key={a} name={a} size={20} />)}
-          <span className="text-[10px] text-zinc-500 ml-2">{(embed.eventAttendees || []).length} dabei</span>
+          <span className="text-[10px] text-zinc-500 ml-2">{(embed.eventAttendees || []).length} {t('events.attending')}</span>
         </div>
-        <button onClick={() => rsvpChatEvent(groupId, message.id, currentUser)}
+        <button onClick={() => rsvpChatEvent(groupId, message.id, getAuthorId())}
           className={cn(
             'flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-colors',
             going ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
               : 'bg-white/[0.04] text-zinc-400 border border-white/[0.08] active:bg-indigo-500/10'
           )}>
-          {going ? <><Check size={10} /> Dabei</> : <><Plus size={10} /> Zusagen</>}
+          {going ? <><Check size={10} /> {t('events.attending')}</> : <><Plus size={10} /> {t('events.rsvp')}</>}
         </button>
       </div>
     </div>
@@ -95,6 +98,7 @@ function EventEmbed({ message, groupId }: { message: ChatMessage; groupId: strin
 
 function TodoEmbed({ message, groupId }: { message: ChatMessage; groupId: string }) {
   const { toggleChatTodo } = useAppStore()
+  const t = useT()
   const embed = message.embed!
   const done = embed.todoDone || false
 
@@ -102,7 +106,7 @@ function TodoEmbed({ message, groupId }: { message: ChatMessage; groupId: string
     <div className="mt-2 bg-[#0e1015]/60 rounded-xl p-3 border border-cyan-500/15">
       <div className="flex items-center gap-1.5 mb-2">
         <CheckSquare size={12} className="text-cyan-400" />
-        <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">Aufgabe</span>
+        <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">{t('chat.task')}</span>
       </div>
       <button onClick={() => toggleChatTodo(groupId, message.id)}
         className="w-full flex items-center gap-2.5 text-left">
@@ -122,6 +126,7 @@ function TodoEmbed({ message, groupId }: { message: ChatMessage; groupId: string
 }
 
 function LinkEmbed({ message, group }: { message: ChatMessage; group: Group }) {
+  const t = useT()
   const embed = message.embed!
   const linked = embed.linkedItem
   if (!linked) return null
@@ -147,7 +152,7 @@ function LinkEmbed({ message, group }: { message: ChatMessage; group: Group }) {
     case 'mapPin': {
       const pin = (group.mapPins || []).find((p) => p.id === linked.id)
       if (!pin) return null
-      name = pin.label; emoji = pin.emoji; color = '#fbbf24'; sub = pin.type === 'visited' ? '✅ Besucht' : '✨ Wunschliste'
+      name = pin.label; emoji = pin.emoji; color = '#fbbf24'; sub = pin.type === 'visited' ? `✅ ${t('map.visited')}` : `✨ ${t('map.wishlist')}`
       break
     }
     case 'todo': {
@@ -174,7 +179,7 @@ function LinkEmbed({ message, group }: { message: ChatMessage; group: Group }) {
     <div className="mt-2 rounded-xl p-3 border" style={{ backgroundColor: `${color}08`, borderColor: `${color}20` }}>
       <div className="flex items-center gap-1.5 mb-1.5">
         <Link2 size={11} style={{ color }} />
-        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color }}>Verknüpft</span>
+        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color }}>{t('chat.linked')}</span>
       </div>
       <div className="flex items-center gap-2">
         <span className="text-lg">{emoji}</span>
@@ -195,6 +200,7 @@ function EmbedCreator({ group, mode, onClose, onSend }: {
   group: Group; mode: CreatorMode; onClose: () => void
   onSend: (text: string, embed: ChatEmbed) => void
 }) {
+  const t = useT()
   // Poll
   const [pollQ, setPollQ] = useState('')
   const [pollOpts, setPollOpts] = useState(['', ''])
@@ -220,7 +226,7 @@ function EmbedCreator({ group, mode, onClose, onSend }: {
 
   const sendEvent = () => {
     if (!evTitle.trim() || !evDate) return
-    onSend(`Wer kommt mit? ${evTitle.trim()}`, {
+    onSend(`${t('chat.who_is_coming')} ${evTitle.trim()}`, {
       type: 'event_invite', eventTitle: evTitle.trim(),
       eventDate: evDate, eventTime: evTime, eventAttendees: [],
     })
@@ -240,10 +246,10 @@ function EmbedCreator({ group, mode, onClose, onSend }: {
     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
       className="overflow-hidden border-t border-violet-500/10 bg-[#12141e] px-3 py-3">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[11px] font-bold text-violet-400 flex items-center gap-1"><Vote size={12} /> Abstimmung erstellen</span>
+        <span className="text-[11px] font-bold text-violet-400 flex items-center gap-1"><Vote size={12} /> {t('chat.create_poll')}</span>
         <button onClick={onClose} className="text-zinc-600 p-0.5"><X size={14} /></button>
       </div>
-      <input value={pollQ} onChange={(e) => setPollQ(e.target.value)} placeholder="Frage..."
+      <input value={pollQ} onChange={(e) => setPollQ(e.target.value)} placeholder={t('chat.poll_question')}
         className="w-full px-3 py-2 bg-[#0e1015] border border-white/[0.08] rounded-lg text-white text-[12px] outline-none placeholder:text-zinc-600 mb-2" />
       {pollOpts.map((opt, i) => (
         <input key={i} value={opt} onChange={(e) => { const n = [...pollOpts]; n[i] = e.target.value; setPollOpts(n) }}
@@ -252,11 +258,11 @@ function EmbedCreator({ group, mode, onClose, onSend }: {
       ))}
       <div className="flex gap-2 mt-2">
         {pollOpts.length < 5 && (
-          <button onClick={() => setPollOpts([...pollOpts, ''])} className="text-[10px] text-zinc-500 active:text-zinc-300">+ Option</button>
+          <button onClick={() => setPollOpts([...pollOpts, ''])} className="text-[10px] text-zinc-500 active:text-zinc-300">{t('chat.add_option')}</button>
         )}
         <div className="flex-1" />
         <button onClick={sendPoll} className="px-3 py-1.5 bg-violet-500 text-white rounded-lg text-[11px] font-semibold active:scale-95">
-          Senden
+          {t('chat.send')}
         </button>
       </div>
     </motion.div>
@@ -266,10 +272,10 @@ function EmbedCreator({ group, mode, onClose, onSend }: {
     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
       className="overflow-hidden border-t border-indigo-500/10 bg-[#12141e] px-3 py-3">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[11px] font-bold text-indigo-400 flex items-center gap-1"><Calendar size={12} /> Event teilen</span>
+        <span className="text-[11px] font-bold text-indigo-400 flex items-center gap-1"><Calendar size={12} /> {t('chat.share_event')}</span>
         <button onClick={onClose} className="text-zinc-600 p-0.5"><X size={14} /></button>
       </div>
-      <input value={evTitle} onChange={(e) => setEvTitle(e.target.value)} placeholder="Event Name"
+      <input value={evTitle} onChange={(e) => setEvTitle(e.target.value)} placeholder={t('events.name')}
         className="w-full px-3 py-2 bg-[#0e1015] border border-white/[0.08] rounded-lg text-white text-[12px] outline-none placeholder:text-zinc-600 mb-1.5" />
       <div className="flex gap-1.5">
         <input type="date" value={evDate} onChange={(e) => setEvDate(e.target.value)}
@@ -279,7 +285,7 @@ function EmbedCreator({ group, mode, onClose, onSend }: {
       </div>
       <div className="flex justify-end mt-2">
         <button onClick={sendEvent} className="px-3 py-1.5 bg-indigo-500 text-white rounded-lg text-[11px] font-semibold active:scale-95">
-          Senden
+          {t('chat.send')}
         </button>
       </div>
     </motion.div>
@@ -289,19 +295,19 @@ function EmbedCreator({ group, mode, onClose, onSend }: {
     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
       className="overflow-hidden border-t border-cyan-500/10 bg-[#12141e] px-3 py-3">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[11px] font-bold text-cyan-400 flex items-center gap-1"><CheckSquare size={12} /> Aufgabe zuweisen</span>
+        <span className="text-[11px] font-bold text-cyan-400 flex items-center gap-1"><CheckSquare size={12} /> {t('chat.assign_task')}</span>
         <button onClick={onClose} className="text-zinc-600 p-0.5"><X size={14} /></button>
       </div>
-      <input value={todoText} onChange={(e) => setTodoText(e.target.value)} placeholder="Aufgabe..."
+      <input value={todoText} onChange={(e) => setTodoText(e.target.value)} placeholder={t('chat.task_placeholder')}
         className="w-full px-3 py-2 bg-[#0e1015] border border-white/[0.08] rounded-lg text-white text-[12px] outline-none placeholder:text-zinc-600 mb-1.5" />
       <select value={todoAssignee} onChange={(e) => setTodoAssignee(e.target.value)}
         className="w-full px-3 py-1.5 bg-[#0e1015] border border-white/[0.08] rounded-lg text-zinc-400 text-[12px] outline-none">
-        <option value="">Zuweisen an...</option>
+        <option value="">{t('chat.assign_to')}</option>
         {group.members.map((m) => <option key={m} value={m}>{getUserName(m)}</option>)}
       </select>
       <div className="flex justify-end mt-2">
         <button onClick={sendTodo} className="px-3 py-1.5 bg-cyan-500 text-white rounded-lg text-[11px] font-semibold active:scale-95">
-          Senden
+          {t('chat.send')}
         </button>
       </div>
     </motion.div>
@@ -315,6 +321,7 @@ function EmbedCreator({ group, mode, onClose, onSend }: {
 export function ChatPage() {
   const { group } = useOutletContext<{ group: Group }>()
   const { currentUser, addMessage, addFeedItem, toggleChatReaction } = useAppStore()
+  const t = useT()
   const [text, setText] = useState('')
   const [creatorMode, setCreatorMode] = useState<CreatorMode>(null)
   const [showLinkPicker, setShowLinkPicker] = useState(false)
@@ -371,7 +378,7 @@ export function ChatPage() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-1.5">
         {group.messages.length === 0 && (
-          <p className="text-zinc-600 text-sm text-center py-12">Starte die Konversation! 💬</p>
+          <p className="text-zinc-600 text-sm text-center py-12">{t('chat.start')} 💬</p>
         )}
         {group.messages.map((m, i) => {
           const isOwn = isMe(m.authorId)
@@ -405,9 +412,9 @@ export function ChatPage() {
                 {m.reactions && m.reactions.length > 0 && (
                   <div className="flex gap-1 mt-1 flex-wrap">
                     {m.reactions.map((r) => (
-                      <button key={r.emoji} onClick={() => { toggleChatReaction(group.id, m.id, r.emoji, currentUser); hapticLight() }}
+                      <button key={r.emoji} onClick={() => { toggleChatReaction(group.id, m.id, r.emoji, getAuthorId()); hapticLight() }}
                         className={cn('flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] border transition-colors',
-                          r.users.includes(currentUser) ? 'bg-indigo-500/15 border-indigo-500/25' : 'bg-white/[0.03] border-white/[0.06]'
+                          r.users.some(isMe) ? 'bg-indigo-500/15 border-indigo-500/25' : 'bg-white/[0.03] border-white/[0.06]'
                         )}>
                         <span>{r.emoji}</span>
                         <span className="text-[10px] text-zinc-500">{r.users.length}</span>
@@ -419,7 +426,7 @@ export function ChatPage() {
                 {reactingTo === m.id && (
                   <div className="flex gap-1 mt-1.5">
                     {REACTIONS.map((emoji) => (
-                      <button key={emoji} onClick={() => { toggleChatReaction(group.id, m.id, emoji, currentUser); hapticLight(); setReactingTo(null) }}
+                      <button key={emoji} onClick={() => { toggleChatReaction(group.id, m.id, emoji, getAuthorId()); hapticLight(); setReactingTo(null) }}
                         className="text-lg p-1 rounded-lg active:scale-125 transition-transform active:bg-white/[0.05]">
                         {emoji}
                       </button>
@@ -446,9 +453,9 @@ export function ChatPage() {
         {/* Quick-attach bar */}
         <div className="flex gap-1 px-3 pt-2">
           {([
-            { mode: 'poll' as const, icon: Vote, label: 'Abstimmung', color: 'text-violet-400 bg-violet-500/10 border-violet-500/15' },
-            { mode: 'event' as const, icon: Calendar, label: 'Event', color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/15' },
-            { mode: 'todo' as const, icon: CheckSquare, label: 'Aufgabe', color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/15' },
+            { mode: 'poll' as const, icon: Vote, label: t('chat.poll'), color: 'text-violet-400 bg-violet-500/10 border-violet-500/15' },
+            { mode: 'event' as const, icon: Calendar, label: t('chat.event_invite'), color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/15' },
+            { mode: 'todo' as const, icon: CheckSquare, label: t('chat.task'), color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/15' },
           ] as const).map((item) => (
             <button key={item.mode}
               onClick={() => setCreatorMode(creatorMode === item.mode ? null : item.mode)}
@@ -464,14 +471,14 @@ export function ChatPage() {
               'flex items-center gap-1 px-2.5 py-2 rounded-lg text-[11px] font-semibold border transition-colors',
               showLinkPicker ? 'text-amber-400 bg-amber-500/10 border-amber-500/15' : 'text-zinc-600 bg-transparent border-transparent active:bg-white/[0.03]'
             )}>
-            <Link2 size={13} /> Link
+            <Link2 size={13} /> {t('chat.link')}
           </button>
         </div>
         {/* Text input */}
         <div className="flex gap-2 p-3 pb-safe">
           <input value={text} onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Nachricht..."
+            placeholder={`${t('chat.placeholder')}...`}
             className="flex-1 px-4 py-3 bg-[#161822] border border-white/[0.08] rounded-2xl text-white text-sm outline-none focus:border-indigo-500/50 transition-colors placeholder:text-zinc-600" />
           <button onClick={handleSend} disabled={!text.trim()}
             className="px-4 bg-indigo-500 text-white rounded-2xl active:scale-95 transition-all disabled:opacity-30">

@@ -3,19 +3,19 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAppStore } from '@/stores/appStore'
 import { Avatar } from '@/components/ui/Avatar'
-import { getUserName } from '@/lib/users'
+import { getUserName, isMe } from '@/lib/users'
 
 export function JoinPage() {
   const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
-  const { groups, joinGroup, currentUser, profile, updateProfile } = useAppStore()
+  const { groups, joinGroup, profile, updateProfile } = useAppStore()
   // Find the group by invite code
   const group = groups.find((g) => g.inviteCode === code?.toUpperCase())
 
   // Determine status synchronously (no useEffect needed)
   const getStatus = (): 'found' | 'not_found' | 'already_member' => {
     if (!code || !group) return 'not_found'
-    if (group.members.includes(currentUser)) return 'already_member'
+    if (group.members.some(isMe)) return 'already_member'
     return 'found'
   }
 

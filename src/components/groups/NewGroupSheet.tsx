@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAppStore } from '@/stores/appStore'
 import { uid } from '@/lib/utils'
+import { isMe } from '@/lib/users'
 import type { Group } from '@/types'
 
 const EMOJIS = ['👥', '🏙️', '🏖️', '🎮', '🍕', '⚽', '🎵', '📸', '🧗', '🎲', '🏠', '💼', '🎓', '🏋️', '🚗', '🍺', '🎭', '🌍', '❤️', '🎪']
@@ -33,7 +34,7 @@ export function NewGroupSheet({ onClose }: Props) {
       members,
       memberRoles: members.map((m) => ({
         name: m,
-        role: m === currentUser ? 'admin' as const : 'member' as const,
+        role: isMe(m) ? 'admin' as const : 'member' as const,
       })),
       todos: [],
       expenses: [],

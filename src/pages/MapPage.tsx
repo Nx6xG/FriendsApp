@@ -12,6 +12,7 @@ import { startLocationTracking, stopLocationTracking, isTrackingGroup } from '@/
 import { uid, cn, timeAgo } from '@/lib/utils'
 import { getAuthorId, isMe, getUserName } from '@/lib/users'
 import { Avatar } from '@/components/ui/Avatar'
+import { useT } from '@/lib/i18n'
 import type { Group, MapPin as MapPinType } from '@/types'
 
 // ─── Custom marker icons ──────────────────────────────────────
@@ -96,6 +97,7 @@ function MapClickHandler({ onMapClick }: { onMapClick: (lat: number, lng: number
 export function MapPage() {
   const { group } = useOutletContext<{ group: Group }>()
   const { currentUser, addMapPin, deleteMapPin, addFeedItem } = useAppStore()
+  const t = useT()
   const [showForm, setShowForm] = useState(false)
   const [showLive, setShowLive] = useState(true)
   const [selectedPin, setSelectedPin] = useState<MapPinType | null>(null)
@@ -177,11 +179,11 @@ export function MapPage() {
       <div className="flex gap-3 mb-4">
         <div className="flex-1 bg-emerald-500/10 border border-emerald-500/15 rounded-xl p-3 text-center">
           <p className="text-xl font-extrabold text-emerald-400">{visitedCount}</p>
-          <p className="text-[10px] text-zinc-500 mt-0.5">Besucht</p>
+          <p className="text-[10px] text-zinc-500 mt-0.5">{t('map.visited')}</p>
         </div>
         <div className="flex-1 bg-amber-500/10 border border-amber-500/15 rounded-xl p-3 text-center">
           <p className="text-xl font-extrabold text-amber-400">{wishlistCount}</p>
-          <p className="text-[10px] text-zinc-500 mt-0.5">Wunschliste</p>
+          <p className="text-[10px] text-zinc-500 mt-0.5">{t('map.wishlist')}</p>
         </div>
         <div className="flex-1 bg-indigo-500/10 border border-indigo-500/15 rounded-xl p-3 text-center">
           <p className="text-xl font-extrabold text-indigo-400">{liveLocations.length}</p>
@@ -197,14 +199,14 @@ export function MapPage() {
               className={cn('px-3 py-2 rounded-lg text-[11px] font-semibold transition-colors',
                 filter === f ? 'bg-indigo-500/20 text-indigo-300' : 'bg-white/[0.03] text-zinc-600'
               )}>
-              {f === 'all' ? 'Alle' : f === 'visited' ? '✅ Besucht' : '✨ Wunsch'}
+              {f === 'all' ? t('map.filter_all') : f === 'visited' ? `✅ ${t('map.filter_visited')}` : `✨ ${t('map.filter_wish')}`}
             </button>
           ))}
         </div>
         <div className="flex gap-1.5">
           <button onClick={toggleTracking}
             className={cn('p-2.5 rounded-lg transition-colors', tracking ? 'text-indigo-400 bg-indigo-500/10' : 'text-zinc-600 bg-white/[0.03]')}
-            title={tracking ? 'Standort wird geteilt' : 'Standort teilen'}>
+            title={tracking ? t('map.share_on') : t('map.share_off')}>
             <Locate size={14} />
           </button>
           <button onClick={() => setShowLive(!showLive)}
@@ -273,7 +275,7 @@ export function MapPage() {
                   <strong>{getUserName(loc.userId)}</strong>
                   <br />
                   <span style={{ fontSize: 11, color: '#666' }}>
-                    {loc.label || 'Unterwegs'} · {timeAgo(loc.updatedAt)}
+                    {loc.label || t('map.on_the_way')} · {timeAgo(loc.updatedAt)}
                   </span>
                 </div>
               </Popup>
@@ -320,7 +322,7 @@ export function MapPage() {
               <div className="flex items-center gap-2 mt-1">
                 <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded',
                   selectedPin.type === 'visited' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/15 text-amber-400'
-                )}>{selectedPin.type === 'visited' ? 'Besucht' : 'Wunschliste'}</span>
+                )}>{selectedPin.type === 'visited' ? t('map.visited') : t('map.wishlist')}</span>
                 <Avatar name={selectedPin.addedBy} size={16} />
                 <span className="text-[11px] text-zinc-500">{getUserName(selectedPin.addedBy)}</span>
                 {selectedPin.date && <span className="text-[11px] text-zinc-600">{selectedPin.date}</span>}
@@ -340,7 +342,7 @@ export function MapPage() {
       {showLive && liveLocations.length > 0 && (
         <div className="mb-4">
           <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-            <Navigation size={11} /> Wo ist wer?
+            <Navigation size={11} /> {t('map.who_where')}
           </h4>
           <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1">
             {liveLocations.map((loc) => (
@@ -352,7 +354,7 @@ export function MapPage() {
                 </div>
                 <div className="text-left">
                   <p className="text-[11px] font-semibold">{getUserName(loc.userId)}</p>
-                  <p className="text-[9px] text-zinc-600">{loc.label || 'Unterwegs'} · {timeAgo(loc.updatedAt)}</p>
+                  <p className="text-[9px] text-zinc-600">{loc.label || t('map.on_the_way')} · {timeAgo(loc.updatedAt)}</p>
                 </div>
               </button>
             ))}
@@ -365,7 +367,7 @@ export function MapPage() {
         {showForm && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mb-4">
             <div className="bg-[#161822] border border-white/[0.06] rounded-2xl p-4 space-y-3">
-              <p className="text-[12px] font-semibold text-zinc-400">Neuen Ort hinzufügen</p>
+              <p className="text-[12px] font-semibold text-zinc-400">{t('map.add_place')}</p>
 
               {/* Quick presets */}
               <div className="flex gap-1.5 flex-wrap">
@@ -377,29 +379,29 @@ export function MapPage() {
                 ))}
               </div>
 
-              <input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Ortsname"
+              <input value={label} onChange={(e) => setLabel(e.target.value)} placeholder={t('map.place_name')}
                 className="w-full px-3 py-2.5 bg-[#0e1015] border border-white/[0.08] rounded-xl text-white text-sm outline-none focus:border-indigo-500/50 placeholder:text-zinc-600" />
               <div className="flex gap-2">
-                <input value={lat} onChange={(e) => setLat(e.target.value)} placeholder="Breitengrad" type="number" step="0.01" inputMode="decimal"
+                <input value={lat} onChange={(e) => setLat(e.target.value)} placeholder={t('map.latitude')} type="number" step="0.01" inputMode="decimal"
                   className="flex-1 px-3 py-2.5 bg-[#0e1015] border border-white/[0.08] rounded-xl text-white text-sm outline-none placeholder:text-zinc-600" />
-                <input value={lng} onChange={(e) => setLng(e.target.value)} placeholder="Längengrad" type="number" step="0.01" inputMode="decimal"
+                <input value={lng} onChange={(e) => setLng(e.target.value)} placeholder={t('map.longitude')} type="number" step="0.01" inputMode="decimal"
                   className="flex-1 px-3 py-2.5 bg-[#0e1015] border border-white/[0.08] rounded-xl text-white text-sm outline-none placeholder:text-zinc-600" />
               </div>
               <div className="flex gap-2">
                 <button onClick={() => setPinType('visited')}
                   className={cn('flex-1 py-2 rounded-xl text-[12px] font-semibold transition-colors',
                     pinType === 'visited' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-[#0e1015] text-zinc-500 border border-white/[0.06]')}>
-                  ✅ Besucht
+                  ✅ {t('map.visited')}
                 </button>
                 <button onClick={() => setPinType('wishlist')}
                   className={cn('flex-1 py-2 rounded-xl text-[12px] font-semibold transition-colors',
                     pinType === 'wishlist' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/20' : 'bg-[#0e1015] text-zinc-500 border border-white/[0.06]')}>
-                  ✨ Wunschliste
+                  ✨ {t('map.wishlist')}
                 </button>
               </div>
               <button onClick={handleAdd} disabled={!label.trim() || !lat || !lng}
                 className="w-full py-2.5 bg-indigo-500 text-white rounded-xl font-bold text-sm active:scale-[0.98] disabled:opacity-30">
-                Pin setzen
+                {t('map.set_pin')}
               </button>
             </div>
           </motion.div>
@@ -412,7 +414,7 @@ export function MapPage() {
         {pins.length === 0 && (
           <div className="text-center py-8">
             <span className="text-3xl">🗺️</span>
-            <p className="text-zinc-500 text-[13px] mt-2">Noch keine Pins — füge euren ersten Ort hinzu!</p>
+            <p className="text-zinc-500 text-[13px] mt-2">{t('map.empty')}</p>
           </div>
         )}
         {pins.map((pin) => (

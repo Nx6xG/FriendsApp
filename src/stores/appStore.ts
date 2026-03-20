@@ -4,6 +4,8 @@ import type { Group, GroupSettings, UserGroupPrefs, TodoItem, TodoComment, Expen
 import { uid } from '@/lib/utils'
 import { getCurrentUserId, resync } from '@/lib/sync'
 import * as db from '@/lib/supabaseData'
+import { logError } from '@/lib/logger'
+import { registerUser } from '@/lib/users'
 
 // ─── Demo data ──────────────────────────────────────────────────
 const now = Date.now()
@@ -379,14 +381,14 @@ export const useAppStore = create<AppState>()(
               invite_code: group.inviteCode, settings: group.settings || {},
               created_by: uid,
             })
-            if (groupErr) { console.error('[DB]', groupErr); return }
+            if (groupErr) { logError('[DB]', groupErr); return }
 
             const { error: memberErr } = await db.dbAddMember(group.id, uid, 'admin')
-            if (memberErr) console.error('[DB]', memberErr)
+            if (memberErr) logError('[DB]', memberErr)
 
             if (group.feed.length > 0) {
               const feedItem = group.feed[0]
-              db.dbInsertFeedItem(group.id, feedItem.id, feedItem.type, feedItem.text).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+              db.dbInsertFeedItem(group.id, feedItem.id, feedItem.type, feedItem.text).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
             }
 
             await resync()
@@ -399,7 +401,7 @@ export const useAppStore = create<AppState>()(
         if (!get().demoMode) {
           db.dbDeleteGroup(groupId).then(({ error }) => {
             if (error) {
-              console.error('[DB] deleteGroup failed:', error)
+              logError('[DB] deleteGroup failed:', error)
               // Re-add group if DB delete failed (e.g. RLS)
               if (group) set((s) => ({ groups: [...s.groups, group] }))
             }
@@ -432,7 +434,7 @@ export const useAppStore = create<AppState>()(
         }))
         if (!get().demoMode) {
           getCurrentUserId().then(uid => {
-            if (uid) db.dbAddMember(group.id, uid, 'member').then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+            if (uid) db.dbAddMember(group.id, uid, 'member').then(({ error: e }) => { if (e) logError("[DB]", e.message) })
           })
         }
         return group
@@ -441,120 +443,128 @@ export const useAppStore = create<AppState>()(
       // V1
       addTodo: (groupId, todo) => {
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, todos: [...g.todos, todo] })) }))
-        if (!get().demoMode) getCurrentUserId().then(uid => { if (uid) db.dbInsertTodo(groupId, todo, uid).then(({ error: e }) => { if (e) console.error("[DB]", e.message) }) })
+        if (!get().demoMode) getCurrentUserId().then(uid => { if (uid) db.dbInsertTodo(groupId, todo, uid).then(({ error: e }) => { if (e) logError("[DB]", e.message) }) })
       },
       updateTodo: (groupId, todoId, updates) => {
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, todos: g.todos.map((t) => (t.id === todoId ? { ...t, ...updates } : t)) })) }))
-        if (!get().demoMode) db.dbUpdateTodo(todoId, updates).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbUpdateTodo(todoId, updates).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       toggleTodo: (groupId, todoId) => {
-        set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, todos: g.todos.map((t) => (t.id === todoId ? { ...t, done: !t.done } : t)) })) }))
-        if (!get().demoMode) { const t = get().groups.find(g => g.id === groupId)?.todos.find(t => t.id === todoId); if (t) db.dbUpdateTodo(todoId, { done: t.done }).then(({ error: e }) => { if (e) console.error("[DB]", e.message) }) }
+        const oldTodo = get().groups.find(g => g.id === groupId)?.todos.find(t => t.id === todoId)
+        const newDone = oldTodo ? !oldTodo.done : true
+        set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, todos: g.todos.map((t) => (t.id === todoId ? { ...t, done: newDone } : t)) })) }))
+        if (!get().demoMode) db.dbUpdateTodo(todoId, { done: newDone }).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       deleteTodo: (groupId, todoId) => {
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, todos: g.todos.filter((t) => t.id !== todoId) })) }))
-        if (!get().demoMode) db.dbDeleteTodo(todoId).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbDeleteTodo(todoId).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
 
       addTodoComment: (groupId, todoId, comment) => {
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({
           ...g, todos: g.todos.map((t) => t.id === todoId ? { ...t, comments: [...(t.comments || []), comment] } : t)
         })) }))
-        if (!get().demoMode) db.dbInsertTodoComment(todoId, groupId, comment).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbInsertTodoComment(todoId, groupId, comment).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
 
       addExpense: (groupId, expense) => {
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, expenses: [...g.expenses, expense] })) }))
-        if (!get().demoMode) db.dbInsertExpense(groupId, expense).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbInsertExpense(groupId, expense).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       updateExpense: (groupId, expenseId, updates) => {
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, expenses: g.expenses.map((e) => (e.id === expenseId ? { ...e, ...updates } : e)) })) }))
-        if (!get().demoMode) db.dbUpdateExpense(expenseId, updates).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbUpdateExpense(expenseId, updates).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       deleteExpense: (groupId, expenseId) => {
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, expenses: g.expenses.filter((e) => e.id !== expenseId) })) }))
-        if (!get().demoMode) db.dbDeleteExpense(expenseId).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbDeleteExpense(expenseId).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       addPayment: (groupId, payment) => {
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, payments: [...(g.payments || []), payment] })) }))
-        if (!get().demoMode) db.dbInsertPayment(groupId, payment).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbInsertPayment(groupId, payment).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       deletePayment: (groupId, paymentId) => {
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, payments: (g.payments || []).filter((p) => p.id !== paymentId) })) }))
-        if (!get().demoMode) db.dbDeletePayment(paymentId).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbDeletePayment(paymentId).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
 
       addSuggestion: (groupId, suggestion) => {
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, suggestions: [...g.suggestions, suggestion] })) }))
-        if (!get().demoMode) db.dbInsertSuggestion(groupId, suggestion).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbInsertSuggestion(groupId, suggestion).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       updateSuggestion: (groupId, suggestionId, updates) => {
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, suggestions: g.suggestions.map((sg) => (sg.id === suggestionId ? { ...sg, ...updates } : sg)) })) }))
-        if (!get().demoMode) db.dbUpdateSuggestion(suggestionId, updates).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbUpdateSuggestion(suggestionId, updates).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       toggleVote: (groupId, suggestionId, userId) => {
+        const oldSuggestion = get().groups.find(g => g.id === groupId)?.suggestions.find(s => s.id === suggestionId)
+        const newVotes = oldSuggestion
+          ? (oldSuggestion.votes.includes(userId) ? oldSuggestion.votes.filter((v) => v !== userId) : [...oldSuggestion.votes, userId])
+          : [userId]
         set((s) => ({
           groups: updateGroup(s.groups, groupId, (g) => ({
             ...g,
             suggestions: g.suggestions.map((sg) =>
-              sg.id === suggestionId
-                ? { ...sg, votes: sg.votes.includes(userId) ? sg.votes.filter((v) => v !== userId) : [...sg.votes, userId] }
-                : sg
+              sg.id === suggestionId ? { ...sg, votes: newVotes } : sg
             ),
           })),
         }))
-        if (!get().demoMode) { const s = get().groups.find(g => g.id === groupId)?.suggestions.find(s => s.id === suggestionId); if (s) db.dbUpdateSuggestion(suggestionId, { votes: s.votes }).then(({ error: e }) => { if (e) console.error("[DB]", e.message) }) }
+        if (!get().demoMode) db.dbUpdateSuggestion(suggestionId, { votes: newVotes }).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       toggleSuggestionDone: (groupId, suggestionId) => {
-        set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, suggestions: g.suggestions.map((sg) => sg.id === suggestionId ? { ...sg, done: !sg.done } : sg) })) }))
-        if (!get().demoMode) { const s = get().groups.find(g => g.id === groupId)?.suggestions.find(s => s.id === suggestionId); if (s) db.dbUpdateSuggestion(suggestionId, { done: s.done }).then(({ error: e }) => { if (e) console.error("[DB]", e.message) }) }
+        const oldSuggestion = get().groups.find(g => g.id === groupId)?.suggestions.find(s => s.id === suggestionId)
+        const newDone = oldSuggestion ? !oldSuggestion.done : true
+        set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, suggestions: g.suggestions.map((sg) => sg.id === suggestionId ? { ...sg, done: newDone } : sg) })) }))
+        if (!get().demoMode) db.dbUpdateSuggestion(suggestionId, { done: newDone }).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       deleteSuggestion: (groupId, suggestionId) => {
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, suggestions: g.suggestions.filter((sg) => sg.id !== suggestionId) })) }))
-        if (!get().demoMode) db.dbDeleteSuggestion(suggestionId).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbDeleteSuggestion(suggestionId).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
 
       addMessage: (groupId, message) => {
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, messages: [...g.messages, message] })) }))
-        if (!get().demoMode) db.dbInsertMessage(groupId, message).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbInsertMessage(groupId, message).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       addFeedItem: (groupId, item) => {
         const itemId = uid()
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, feed: [{ ...item, id: itemId }, ...g.feed] })) }))
-        if (!get().demoMode) db.dbInsertFeedItem(groupId, itemId, item.type, item.text).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbInsertFeedItem(groupId, itemId, item.type, item.text).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
 
       // V2: Events
       addEvent: (groupId, event) => {
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, events: [...(g.events || []), event] })) }))
-        if (!get().demoMode) db.dbInsertEvent(groupId, event).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbInsertEvent(groupId, event).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       updateEvent: (groupId, eventId, updates) => {
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, events: (g.events || []).map((e) => (e.id === eventId ? { ...e, ...updates } : e)) })) }))
-        if (!get().demoMode) db.dbUpdateEvent(eventId, updates).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbUpdateEvent(eventId, updates).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       deleteEvent: (groupId, eventId) => {
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, events: (g.events || []).filter((e) => e.id !== eventId) })) }))
-        if (!get().demoMode) db.dbDeleteEvent(eventId).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbDeleteEvent(eventId).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       toggleRSVP: (groupId, eventId, userId) => {
+        const oldEvent = get().groups.find(g => g.id === groupId)?.events?.find(e => e.id === eventId)
+        const newAttendees = oldEvent
+          ? (oldEvent.attendees.includes(userId) ? oldEvent.attendees.filter((a) => a !== userId) : [...oldEvent.attendees, userId])
+          : [userId]
         set((s) => ({
           groups: updateGroup(s.groups, groupId, (g) => ({
             ...g,
             events: (g.events || []).map((e) =>
-              e.id === eventId
-                ? { ...e, attendees: e.attendees.includes(userId) ? e.attendees.filter((a) => a !== userId) : [...e.attendees, userId] }
-                : e
+              e.id === eventId ? { ...e, attendees: newAttendees } : e
             ),
           })),
         }))
-        if (!get().demoMode) { const e = get().groups.find(g => g.id === groupId)?.events?.find(e => e.id === eventId); if (e) db.dbUpdateEvent(eventId, { attendees: e.attendees }).then(({ error: e }) => { if (e) console.error("[DB]", e.message) }) }
+        if (!get().demoMode) db.dbUpdateEvent(eventId, { attendees: newAttendees }).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
 
       // V2: Places
       addPlace: (groupId, place) => {
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, places: [...(g.places || []), place] })) }))
-        if (!get().demoMode) db.dbInsertPlace(groupId, place).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbInsertPlace(groupId, place).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       addPlaceRating: (groupId, placeId, rating) => {
         set((s) => ({
@@ -565,11 +575,11 @@ export const useAppStore = create<AppState>()(
             ),
           })),
         }))
-        if (!get().demoMode) db.dbInsertPlaceRating(placeId, groupId, rating).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbInsertPlaceRating(placeId, groupId, rating).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       deletePlace: (groupId, placeId) => {
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, places: (g.places || []).filter((p) => p.id !== placeId) })) }))
-        if (!get().demoMode) db.dbDeletePlace(placeId).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbDeletePlace(placeId).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
 
       // V2: Roles & Settings
@@ -587,7 +597,7 @@ export const useAppStore = create<AppState>()(
             settings: { ...(g.settings || {}), ...settings },
           })),
         }))
-        if (!get().demoMode) db.dbUpdateGroup(groupId, { settings: get().groups.find(g => g.id === groupId)?.settings }).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbUpdateGroup(groupId, { settings: get().groups.find(g => g.id === groupId)?.settings }).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       updateGroupInfo: (groupId, updates) => {
         set((s) => ({
@@ -597,17 +607,17 @@ export const useAppStore = create<AppState>()(
             ...(updates.emoji !== undefined && { emoji: updates.emoji }),
           })),
         }))
-        if (!get().demoMode) db.dbUpdateGroup(groupId, updates).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbUpdateGroup(groupId, updates).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
 
       // V3: Map
       addMapPin: (groupId, pin) => {
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, mapPins: [...(g.mapPins || []), pin] })) }))
-        if (!get().demoMode) db.dbInsertMapPin(groupId, pin).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbInsertMapPin(groupId, pin).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       deleteMapPin: (groupId, pinId) => {
         set((s) => ({ groups: updateGroup(s.groups, groupId, (g) => ({ ...g, mapPins: (g.mapPins || []).filter((p) => p.id !== pinId) })) }))
-        if (!get().demoMode) db.dbDeleteMapPin(pinId).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbDeleteMapPin(pinId).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       updateLiveLocation: (groupId, loc) => {
         set((s) => ({
@@ -619,7 +629,7 @@ export const useAppStore = create<AppState>()(
             ],
           })),
         }))
-        if (!get().demoMode) db.dbUpsertLiveLocation(groupId, loc).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbUpsertLiveLocation(groupId, loc).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
 
       // Chat reactions
@@ -629,24 +639,27 @@ export const useAppStore = create<AppState>()(
             ...g,
             messages: g.messages.map((m) => {
               if (m.id !== messageId) return m
-              const reactions = [...(m.reactions || [])]
+              const reactions = (m.reactions || [])
               const existing = reactions.find((r) => r.emoji === emoji)
               if (existing) {
                 if (existing.users.includes(userId)) {
-                  existing.users = existing.users.filter((u) => u !== userId)
-                  if (existing.users.length === 0) {
+                  const filtered = existing.users.filter((u) => u !== userId)
+                  if (filtered.length === 0) {
                     return { ...m, reactions: reactions.filter((r) => r.emoji !== emoji) }
                   }
+                  return { ...m, reactions: reactions.map((r) => r.emoji === emoji ? { ...r, users: filtered } : r) }
                 } else {
-                  existing.users = [...existing.users, userId]
+                  return { ...m, reactions: reactions.map((r) => r.emoji === emoji ? { ...r, users: [...r.users, userId] } : r) }
                 }
-                return { ...m, reactions: [...reactions] }
               }
               return { ...m, reactions: [...reactions, { emoji, users: [userId] }] }
             }),
           })),
         }))
-        if (!get().demoMode) { const m = get().groups.find(g => g.id === groupId)?.messages.find(m => m.id === messageId); if (m) db.dbUpdateMessage(messageId, { reactions: m.reactions }).then(({ error: e }) => { if (e) console.error("[DB]", e.message) }) }
+        if (!get().demoMode) {
+          const updatedMsg = get().groups.find(g => g.id === groupId)?.messages.find(m => m.id === messageId)
+          if (updatedMsg) db.dbUpdateMessage(messageId, { reactions: updatedMsg.reactions }).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
+        }
       },
 
       // User group prefs
@@ -658,7 +671,7 @@ export const useAppStore = create<AppState>()(
             [groupId]: { ...s.groupPrefs[groupId] || { navTabs: ['feed', 'todos', 'expenses', 'chat'], startTab: '' }, ...prefs },
           },
         }))
-        if (!get().demoMode) getCurrentUserId().then(uid => { if (uid) db.dbUpsertGroupPrefs(uid, groupId, get().groupPrefs[groupId]).then(({ error: e }) => { if (e) console.error("[DB]", e.message) }) })
+        if (!get().demoMode) getCurrentUserId().then(uid => { if (uid) db.dbUpsertGroupPrefs(uid, groupId, get().groupPrefs[groupId]).then(({ error: e }) => { if (e) logError("[DB]", e.message) }) })
       },
       getGroupPrefs: (groupId) => {
         const p = get().groupPrefs[groupId]
@@ -669,11 +682,11 @@ export const useAppStore = create<AppState>()(
       notifications: [] as Notification[],
       addNotification: (n) => {
         set((s) => ({ notifications: [n, ...s.notifications] }))
-        if (!get().demoMode) db.dbInsertNotification(n).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbInsertNotification(n).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       markNotificationRead: (id) => {
         set((s) => ({ notifications: s.notifications.map((n) => n.id === id ? { ...n, read: true } : n) }))
-        if (!get().demoMode) db.dbUpdateNotification(id, { read: true }).then(({ error: e }) => { if (e) console.error("[DB]", e.message) })
+        if (!get().demoMode) db.dbUpdateNotification(id, { read: true }).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
       clearNotifications: () => set((s) => ({ notifications: s.notifications.map((n) => ({ ...n, read: true })) })),
 
@@ -687,7 +700,7 @@ export const useAppStore = create<AppState>()(
           profile: { ...s.profile, ...updates },
           currentUser: updates.name || s.currentUser,
         }))
-        if (!get().demoMode) getCurrentUserId().then(uid => { if (uid) db.dbUpdateProfile(uid, updates).then(({ error: e }) => { if (e) console.error("[DB]", e.message) }) })
+        if (!get().demoMode) getCurrentUserId().then(uid => { if (uid) db.dbUpdateProfile(uid, updates).then(({ error: e }) => { if (e) logError("[DB]", e.message) }) })
       },
 
       // Chat embeds
@@ -712,7 +725,10 @@ export const useAppStore = create<AppState>()(
             ),
           })),
         }))
-        if (!get().demoMode) { const m = get().groups.find(g => g.id === groupId)?.messages.find(m => m.id === messageId); if (m) db.dbUpdateMessage(messageId, { embed: m.embed }).then(({ error: e }) => { if (e) console.error("[DB]", e.message) }) }
+        if (!get().demoMode) {
+          const updatedMsg = get().groups.find(g => g.id === groupId)?.messages.find(m => m.id === messageId)
+          if (updatedMsg) db.dbUpdateMessage(messageId, { embed: updatedMsg.embed }).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
+        }
       },
 
       rsvpChatEvent: (groupId, messageId, userId) => {
@@ -734,7 +750,10 @@ export const useAppStore = create<AppState>()(
             ),
           })),
         }))
-        if (!get().demoMode) { const m = get().groups.find(g => g.id === groupId)?.messages.find(m => m.id === messageId); if (m) db.dbUpdateMessage(messageId, { embed: m.embed }).then(({ error: e }) => { if (e) console.error("[DB]", e.message) }) }
+        if (!get().demoMode) {
+          const updatedMsg = get().groups.find(g => g.id === groupId)?.messages.find(m => m.id === messageId)
+          if (updatedMsg) db.dbUpdateMessage(messageId, { embed: updatedMsg.embed }).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
+        }
       },
 
       toggleChatTodo: (groupId, messageId) => {
@@ -748,7 +767,10 @@ export const useAppStore = create<AppState>()(
             ),
           })),
         }))
-        if (!get().demoMode) { const m = get().groups.find(g => g.id === groupId)?.messages.find(m => m.id === messageId); if (m) db.dbUpdateMessage(messageId, { embed: m.embed }).then(({ error: e }) => { if (e) console.error("[DB]", e.message) }) }
+        if (!get().demoMode) {
+          const updatedMsg = get().groups.find(g => g.id === groupId)?.messages.find(m => m.id === messageId)
+          if (updatedMsg) db.dbUpdateMessage(messageId, { embed: updatedMsg.embed }).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
+        }
       },
 
       loadDemoData: () => set((s) => {
@@ -763,12 +785,57 @@ export const useAppStore = create<AppState>()(
           profile: s.currentUser ? s.profile : { name: 'Nico', emoji: '😎', status: 'Auf der Suche nach Abenteuern', shareLocation: false, notificationsEnabled: true, darkMode: true, language: 'de' },
         }
       }),
-      resetAppData: () => set({ groups: [], onboarded: false, currentUser: '', notifications: [], profile: { name: '', emoji: '😊', status: undefined, shareLocation: false, notificationsEnabled: true, darkMode: true, language: 'de' } }),
+      resetAppData: () => {
+        if (!get().demoMode) {
+          const userId = get().currentUserId
+          const groups = get().groups
+          for (const g of groups) {
+            if (g.createdBy === userId) {
+              // Own group → delete entirely
+              db.dbDeleteGroup(g.id).then(({ error }) => {
+                if (error) logError('[DB] resetAppData deleteGroup failed:', error)
+              })
+            } else if (userId) {
+              // Joined group → just remove membership
+              db.dbRemoveMember(g.id, userId).then(({ error }) => {
+                if (error) logError('[DB] resetAppData removeMember failed:', error)
+              })
+            }
+          }
+        }
+        set({ groups: [], onboarded: false, currentUser: '', currentUserId: '', notifications: [], groupPrefs: {}, profile: { name: '', emoji: '😊', status: undefined, shareLocation: false, notificationsEnabled: true, darkMode: true, language: 'de' } })
+      },
 
       getGroup: (groupId) => get().groups.find((g) => g.id === groupId),
     }),
     {
       name: 'friends-app-v7',
+      version: 2,
+      migrate: (persisted: unknown, version: number) => {
+        const state = persisted as Record<string, unknown>
+        if (version < 2) {
+          // V2: ensure all required fields exist after schema changes
+          return {
+            ...state,
+            currentUserId: state.currentUserId || '',
+            groupPrefs: state.groupPrefs || {},
+            notifications: state.notifications || [],
+            profile: {
+              name: '', emoji: '😊', status: undefined,
+              shareLocation: false, notificationsEnabled: true, darkMode: true, language: 'de',
+              ...(state.profile as Record<string, unknown> || {}),
+            },
+          }
+        }
+        return state
+      },
+      onRehydrateStorage: () => (state) => {
+        if (!state) return
+        // Rebuild name cache from persisted data so getUserName() works before initSync completes
+        if (state.currentUserId && state.currentUser) {
+          registerUser(state.currentUserId, state.currentUser)
+        }
+      },
     }
   )
 )

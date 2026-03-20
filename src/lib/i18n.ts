@@ -106,6 +106,86 @@ const translations = {
   'todos.new': { de: 'Neue Aufgabe...', en: 'New task...' },
   'todos.who': { de: 'Wer?', en: 'Who?' },
   'todos.all_done': { de: 'Alles erledigt 🎉', en: 'All done 🎉' },
+  'todos.assigned_to': { de: 'Zugewiesen an', en: 'Assigned to' },
+  'todos.priority': { de: 'Priorität', en: 'Priority' },
+  'todos.priority_low': { de: 'Niedrig', en: 'Low' },
+  'todos.priority_medium': { de: 'Mittel', en: 'Medium' },
+  'todos.priority_high': { de: 'Hoch', en: 'High' },
+  'todos.due_date': { de: 'Fällig am', en: 'Due date' },
+  'todos.due_placeholder': { de: 'tt.mm.jjjj', en: 'dd.mm.yyyy' },
+  'todos.tags': { de: 'Tags', en: 'Tags' },
+  'todos.linked': { de: 'Verknüpfungen', en: 'Linked items' },
+  'todos.description': { de: 'Beschreibung', en: 'Description' },
+  'todos.desc_placeholder': { de: 'Details, Notizen...', en: 'Details, notes...' },
+  'todos.add_desc': { de: 'Beschreibung hinzufügen...', en: 'Add description...' },
+  'todos.comments': { de: 'Kommentare', en: 'Comments' },
+  'todos.comment_placeholder': { de: 'Kommentar schreiben...', en: 'Write a comment...' },
+  'todos.reopen': { de: 'Wieder öffnen', en: 'Reopen' },
+  'todos.mark_done': { de: 'Erledigt ✓', en: 'Done ✓' },
+
+  // ─── Expenses ───
+  'expenses.total': { de: 'Gesamtausgaben', en: 'Total expenses' },
+  'expenses.open_debts': { de: 'Offene Schulden', en: 'Open debts' },
+  'expenses.mark_paid': { de: 'Als bezahlt markieren', en: 'Mark as paid' },
+  'expenses.all_settled': { de: 'Alles ausgeglichen ✓', en: 'All settled ✓' },
+  'expenses.payments': { de: 'Zahlungen', en: 'Payments' },
+  'expenses.list_title': { de: 'Ausgaben', en: 'Expenses' },
+  'expenses.what_for': { de: 'Wofür?', en: 'What for?' },
+  'expenses.amount': { de: 'Betrag (€)', en: 'Amount (€)' },
+  'expenses.split_between': { de: 'Aufteilen zwischen:', en: 'Split between:' },
+  'expenses.custom_split': { de: 'Individuell', en: 'Custom' },
+  'expenses.equal_split': { de: 'Gleichmäßig', en: 'Equal' },
+  'expenses.fits': { de: 'Passt ✓', en: 'Matches ✓' },
+  'expenses.difference': { de: 'Differenz:', en: 'Difference:' },
+  'expenses.category': { de: 'Kategorie:', en: 'Category:' },
+  'expenses.recurring': { de: 'Wiederkehrend:', en: 'Recurring:' },
+  'expenses.once': { de: 'Einmalig', en: 'One-time' },
+  'expenses.weekly': { de: 'Wöchentlich', en: 'Weekly' },
+  'expenses.monthly': { de: 'Monatlich', en: 'Monthly' },
+  'expenses.add': { de: 'Hinzufügen', en: 'Add' },
+  'expenses.empty': { de: 'Noch keine Ausgaben', en: 'No expenses yet' },
+  'expenses.persons': { de: 'Pers.', en: 'ppl.' },
+  'expenses.cat_food': { de: 'Essen', en: 'Food' },
+  'expenses.cat_transport': { de: 'Transport', en: 'Transport' },
+  'expenses.cat_entertainment': { de: 'Freizeit', en: 'Entertainment' },
+  'expenses.cat_shopping': { de: 'Einkauf', en: 'Shopping' },
+  'expenses.cat_housing': { de: 'Wohnen', en: 'Housing' },
+  'expenses.cat_travel': { de: 'Reisen', en: 'Travel' },
+  'expenses.cat_other': { de: 'Sonstiges', en: 'Other' },
+
+  // ─── Events ───
+  'events.upcoming': { de: 'Anstehend', en: 'Upcoming' },
+  'events.past': { de: 'Vergangen', en: 'Past' },
+  'events.empty': { de: 'Noch keine Events geplant 📅', en: 'No events planned 📅' },
+  'events.none_today': { de: 'Keine Events an diesem Tag', en: 'No events on this day' },
+  'events.name': { de: 'Event Name', en: 'Event name' },
+  'events.location': { de: '📍 Ort (optional)', en: '📍 Location (optional)' },
+  'events.desc': { de: 'Beschreibung (optional)', en: 'Description (optional)' },
+  'events.repeat': { de: 'Wiederholen:', en: 'Repeat:' },
+  'events.create': { de: 'Event erstellen', en: 'Create event' },
+  'events.attending': { de: 'Dabei', en: 'Going' },
+  'events.rsvp': { de: 'Zusagen', en: 'RSVP' },
+  'events.today': { de: 'Heute', en: 'Today' },
+  'events.tomorrow': { de: 'Morgen', en: 'Tomorrow' },
+  'events.biweekly': { de: 'Alle 2 W.', en: 'Bi-weekly' },
+
+  // ─── Places ───
+  'places.name': { de: 'Name des Ortes', en: 'Place name' },
+  'places.address': { de: '📍 Adresse (optional)', en: '📍 Address (optional)' },
+  'places.add': { de: 'Ort hinzufügen', en: 'Add place' },
+  'places.empty': { de: 'Noch keine Orte hinzugefügt 📍', en: 'No places added yet 📍' },
+  'places.added_by': { de: 'Hinzugefügt von', en: 'Added by' },
+  'places.visited_at': { de: 'Besucht am', en: 'Visited on' },
+  'places.your_rating': { de: 'Deine Bewertung:', en: 'Your rating:' },
+  'places.comment': { de: 'Kommentar (optional)', en: 'Comment (optional)' },
+  'places.rate': { de: 'Bewerten', en: 'Rate' },
+  'places.update_rating': { de: 'Aktualisieren', en: 'Update' },
+  'places.change_rating': { de: 'Bewertung ändern', en: 'Change rating' },
+  'places.add_rating': { de: '+ Bewertung abgeben', en: '+ Add rating' },
+  'places.sort_newest': { de: 'Neueste', en: 'Newest' },
+  'places.sort_best': { de: 'Beste', en: 'Best' },
+  'places.sort_worst': { de: 'Schlechteste', en: 'Worst' },
+  'places.sort_alpha': { de: 'Name A-Z', en: 'Name A-Z' },
 
   // ─── Ideas ───
   'ideas.voting': { de: 'Voting', en: 'Voting' },
@@ -113,12 +193,63 @@ const translations = {
   'ideas.new_suggestion': { de: 'Neuer Vorschlag...', en: 'New suggestion...' },
   'ideas.new_bucket': { de: 'Was wollt ihr mal machen...', en: 'What do you want to do...' },
   'ideas.suggestions': { de: 'Vorschläge', en: 'Suggestions' },
-  'ideas.empty': { de: 'Noch keine Vorschläge — sei der Erste! 💡', en: 'No suggestions yet — be the first! 💡' },
-  'ideas.bucket_empty': { de: 'Keine offenen Einträge — füg was hinzu! ✨', en: 'No open entries — add something! ✨' },
+  'ideas.empty': { de: 'Noch keine Vorschläge — sei der Erste!', en: 'No suggestions yet — be the first!' },
+  'ideas.bucket_empty': { de: 'Keine offenen Einträge — füg was hinzu!', en: 'No open entries — add something!' },
 
-  // ─── Chat ───
-  'chat.placeholder': { de: 'Nachricht...', en: 'Message...' },
-  'chat.start': { de: 'Starte die Konversation! 💬', en: 'Start the conversation! 💬' },
+  // ─── Map ───
+  'map.share_on': { de: 'Standort wird geteilt', en: 'Sharing location' },
+  'map.share_off': { de: 'Standort teilen', en: 'Share location' },
+  'map.who_where': { de: 'Wo ist wer?', en: 'Who is where?' },
+  'map.on_the_way': { de: 'Unterwegs', en: 'On the way' },
+  'map.add_place': { de: 'Neuen Ort hinzufügen', en: 'Add new place' },
+  'map.place_name': { de: 'Ortsname', en: 'Place name' },
+  'map.latitude': { de: 'Breitengrad', en: 'Latitude' },
+  'map.longitude': { de: 'Längengrad', en: 'Longitude' },
+  'map.set_pin': { de: 'Pin setzen', en: 'Set pin' },
+  'map.empty': { de: 'Noch keine Pins — füge euren ersten Ort hinzu!', en: 'No pins yet — add your first place!' },
+  'map.visited': { de: '✅ Besucht', en: '✅ Visited' },
+  'map.wishlist': { de: '✨ Wunschliste', en: '✨ Wishlist' },
+  'map.filter_all': { de: 'Alle', en: 'All' },
+  'map.filter_visited': { de: '✅ Besucht', en: '✅ Visited' },
+  'map.filter_wish': { de: '✨ Wunsch', en: '✨ Wish' },
+
+  // ─── Stats ───
+  'stats.overview': { de: 'Übersicht', en: 'Overview' },
+  'stats.tasks_done': { de: 'Aufgaben erledigt', en: 'Tasks completed' },
+  'stats.top_spender': { de: 'Wer zahlt am meisten', en: 'Top spender' },
+  'stats.group_roles': { de: 'Gruppen-Rollen', en: 'Group roles' },
+  'stats.chat_activity': { de: 'Chat-Aktivität', en: 'Chat activity' },
+  'stats.top_places': { de: 'Top Orte', en: 'Top places' },
+
+  // ─── Chat embeds ───
+  'chat.poll': { de: 'Abstimmung', en: 'Poll' },
+  'chat.event_invite': { de: 'Event-Einladung', en: 'Event invite' },
+  'chat.task': { de: 'Aufgabe', en: 'Task' },
+  'chat.linked': { de: 'Verknüpft', en: 'Linked' },
+  'chat.create_poll': { de: 'Abstimmung erstellen', en: 'Create poll' },
+  'chat.poll_question': { de: 'Frage...', en: 'Question...' },
+  'chat.add_option': { de: '+ Option', en: '+ Option' },
+  'chat.send': { de: 'Senden', en: 'Send' },
+  'chat.share_event': { de: 'Event teilen', en: 'Share event' },
+  'chat.assign_task': { de: 'Aufgabe zuweisen', en: 'Assign task' },
+  'chat.task_placeholder': { de: 'Aufgabe...', en: 'Task...' },
+  'chat.assign_to': { de: 'Zuweisen an...', en: 'Assign to...' },
+  'chat.link': { de: 'Link', en: 'Link' },
+  'chat.placeholder': { de: 'Nachricht', en: 'Message' },
+  'chat.start': { de: 'Starte die Konversation!', en: 'Start the conversation!' },
+
+  // ─── Feed ───
+  'feed.timeline': { de: 'Timeline', en: 'Timeline' },
+  'feed.empty': { de: 'Noch keine Aktivitäten', en: 'No activities yet' },
+  'feed.load_more': { de: 'Mehr laden', en: 'Load more' },
+
+  // ─── General (new) ───
+  'new': { de: 'Neu', en: 'New' },
+  'add': { de: 'Hinzufügen', en: 'Add' },
+  'send': { de: 'Senden', en: 'Send' },
+  'gsettings.invite': { de: 'Mitglieder einladen', en: 'Invite members' },
+  'gsettings.delete_confirm': { de: 'Alle Aufgaben, Ausgaben, Nachrichten und Events werden unwiderruflich gelöscht.', en: 'All tasks, expenses, messages and events will be permanently deleted.' },
+  'gsettings.color': { de: 'Farbe:', en: 'Color:' },
 
   // ─── Group Settings ───
   'gsettings.group': { de: 'Gruppe', en: 'Group' },
@@ -134,11 +265,85 @@ const translations = {
   'gsettings.danger': { de: 'Gefahrenzone', en: 'Danger Zone' },
   'gsettings.delete_group': { de: 'Gruppe löschen', en: 'Delete Group' },
   'gsettings.delete_group_sub': { de: 'Alle Daten dieser Gruppe werden gelöscht', en: 'All data in this group will be deleted' },
+
+  // ─── Chat (additional) ───
+  'chat.votes': { de: 'Stimme', en: 'vote' },
+  'chat.votes_plural': { de: 'Stimmen', en: 'votes' },
+  'chat.who_is_coming': { de: 'Wer kommt mit?', en: 'Who is coming?' },
+
+  // ─── Auth ───
+  'auth.wrong_credentials': { de: 'Email oder Passwort falsch', en: 'Wrong email or password' },
+  'auth.password_min': { de: 'Passwort muss mind. 6 Zeichen haben', en: 'Password must be at least 6 characters' },
+  'auth.tagline': { de: 'Die App für deine Crew', en: 'The app for your crew' },
+  'auth.confirm_sent': { de: 'Bestätigungs-Email gesendet!', en: 'Confirmation email sent!' },
+  'auth.login': { de: 'Einloggen', en: 'Log in' },
+  'auth.signup': { de: 'Registrieren', en: 'Sign up' },
+  'auth.email': { de: 'Email', en: 'Email' },
+  'auth.password': { de: 'Passwort', en: 'Password' },
+  'auth.name': { de: 'Dein Name', en: 'Your name' },
+  'auth.no_account': { de: 'Noch kein Konto?', en: 'No account yet?' },
+  'auth.has_account': { de: 'Schon ein Konto?', en: 'Already have an account?' },
+
+  // ─── Notifications ───
+  'notif.mark_all_read': { de: 'Alle lesen', en: 'Mark all read' },
+
+  // ─── Events (additional) ───
+  'events.oclock': { de: 'Uhr', en: '' },
+  'events.month_0': { de: 'Januar', en: 'January' },
+  'events.month_1': { de: 'Februar', en: 'February' },
+  'events.month_2': { de: 'März', en: 'March' },
+  'events.month_3': { de: 'April', en: 'April' },
+  'events.month_4': { de: 'Mai', en: 'May' },
+  'events.month_5': { de: 'Juni', en: 'June' },
+  'events.month_6': { de: 'Juli', en: 'July' },
+  'events.month_7': { de: 'August', en: 'August' },
+  'events.month_8': { de: 'September', en: 'September' },
+  'events.month_9': { de: 'Oktober', en: 'October' },
+  'events.month_10': { de: 'November', en: 'November' },
+  'events.month_11': { de: 'Dezember', en: 'December' },
+  'events.day_0': { de: 'Mo', en: 'Mo' },
+  'events.day_1': { de: 'Di', en: 'Tu' },
+  'events.day_2': { de: 'Mi', en: 'We' },
+  'events.day_3': { de: 'Do', en: 'Th' },
+  'events.day_4': { de: 'Fr', en: 'Fr' },
+  'events.day_5': { de: 'Sa', en: 'Sa' },
+  'events.day_6': { de: 'So', en: 'Su' },
+  'events.weekly_short': { de: 'Wöchentl.', en: 'Weekly' },
+  'events.biweekly_short': { de: 'Alle 2 W.', en: 'Bi-weekly' },
+  'events.monthly_short': { de: 'Monatl.', en: 'Monthly' },
+
+  // ─── Places (additional) ───
+  'places.cat_restaurant': { de: 'Restaurant', en: 'Restaurant' },
+  'places.cat_cafe': { de: 'Café', en: 'Café' },
+  'places.cat_bar': { de: 'Bar', en: 'Bar' },
+  'places.cat_activity': { de: 'Aktivität', en: 'Activity' },
+  'places.cat_shopping': { de: 'Einkauf', en: 'Shopping' },
+  'places.cat_other': { de: 'Sonstiges', en: 'Other' },
+
+  // ─── Roles ───
+  'role.admin': { de: 'Admin', en: 'Admin' },
+  'role.member': { de: 'Mitglied', en: 'Member' },
+  'role.viewer': { de: 'Zuschauer', en: 'Viewer' },
+
+  // ─── Error ───
+  'error.title': { de: 'Etwas ist schiefgelaufen', en: 'Something went wrong' },
+  'error.body': { de: 'Die App hat einen unerwarteten Fehler festgestellt.', en: 'The app encountered an unexpected error.' },
+  'error.reload': { de: 'Neu laden', en: 'Reload' },
 } as const
 
 type TranslationKey = keyof typeof translations
 
 export function useT() {
   const lang = useAppStore((s) => s.profile.language)
-  return (key: TranslationKey) => translations[key]?.[lang] ?? translations[key]?.de ?? key
+  return (key: TranslationKey | (string & {})) => {
+    const entry = translations[key as TranslationKey]
+    return entry?.[lang] ?? entry?.de ?? key
+  }
+}
+
+/** Non-hook version for use outside React components (class components, constants) */
+export function getT(key: TranslationKey | (string & {})): string {
+  const lang = useAppStore.getState().profile.language
+  const entry = translations[key as TranslationKey]
+  return entry?.[lang] ?? entry?.de ?? key
 }

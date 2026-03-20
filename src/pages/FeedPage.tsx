@@ -3,6 +3,7 @@ import { useOutletContext } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 import { timeAgo } from '@/lib/utils'
+import { useT } from '@/lib/i18n'
 import type { Group } from '@/types'
 
 const TYPE_ICONS: Record<string, string> = {
@@ -15,6 +16,7 @@ const LOAD_MORE = 6
 
 export function FeedPage() {
   const { group } = useOutletContext<{ group: Group }>()
+  const t = useT()
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT)
 
   const visible = group.feed.slice(0, visibleCount)
@@ -23,11 +25,11 @@ export function FeedPage() {
   return (
     <div className="p-4 flex flex-col h-full">
       <h3 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-3 shrink-0">
-        Timeline
+        {t('feed.timeline')}
       </h3>
 
       {group.feed.length === 0 && (
-        <p className="text-zinc-600 text-sm py-8 text-center">Noch keine Aktivitäten</p>
+        <p className="text-zinc-600 text-sm py-8 text-center">{t('feed.empty')}</p>
       )}
 
       <div className="flex flex-col gap-2">
@@ -53,7 +55,7 @@ export function FeedPage() {
           onClick={() => setVisibleCount((c) => c + LOAD_MORE)}
           className="mt-3 py-2.5 text-center text-[12px] text-indigo-400 font-semibold flex items-center justify-center gap-1.5 active:opacity-70"
         >
-          <ChevronDown size={14} /> Mehr laden ({group.feed.length - visibleCount} weitere)
+          <ChevronDown size={14} /> {t('feed.load_more')} ({group.feed.length - visibleCount})
         </button>
       )}
     </div>

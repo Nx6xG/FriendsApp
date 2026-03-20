@@ -10,6 +10,7 @@ import { LinkPicker } from '@/components/ui/LinkPicker'
 import { canUseFeature } from '@/lib/plans'
 import { getAuthorId, isMe, getUserName } from '@/lib/users'
 import { ProPrompt } from '@/components/ui/ProGate'
+import { useT } from '@/lib/i18n'
 import type { Group } from '@/types'
 
 type Mode = 'voting' | 'bucket'
@@ -17,6 +18,7 @@ type Mode = 'voting' | 'bucket'
 export function IdeasPage() {
   const { group } = useOutletContext<{ group: Group }>()
   const { currentUser, addSuggestion, toggleVote, toggleSuggestionDone, deleteSuggestion, addFeedItem, updateSuggestion } = useAppStore()
+  const t = useT()
   const [text, setText] = useState('')
   const [mode, setMode] = useState<Mode>('voting')
   const [linkingSuggestionId, setLinkingSuggestionId] = useState<string | null>(null)
@@ -43,9 +45,9 @@ export function IdeasPage() {
   }
 
   const handleVote = (id: string) => {
-    toggleVote(group.id, id, currentUser)
+    toggleVote(group.id, id, getAuthorId())
     const s = group.suggestions.find((sg) => sg.id === id)
-    if (s && !s.votes.includes(currentUser)) {
+    if (s && !s.votes.some(isMe)) {
       addFeedItem(group.id, {
         type: 'vote',
         text: `${currentUser} hat für "${s.text}" gestimmt`,
@@ -84,7 +86,7 @@ export function IdeasPage() {
           className={cn('flex-1 flex items-center justify-center gap-1.5 py-3 rounded-lg text-[13px] font-semibold transition-colors',
             mode === 'voting' ? 'bg-indigo-500/15 text-indigo-300' : 'text-zinc-500'
           )}>
-          <Vote size={15} /> Voting
+          <Vote size={15} /> {t('ideas.voting')}
         </button>
         <button onClick={() => {
             if (!canUseFeature('bucketList')) { setShowProPrompt(true); return }
@@ -93,7 +95,7 @@ export function IdeasPage() {
           className={cn('flex-1 flex items-center justify-center gap-1.5 py-3 rounded-lg text-[13px] font-semibold transition-colors',
             mode === 'bucket' ? 'bg-emerald-500/15 text-emerald-300' : 'text-zinc-500'
           )}>
-          <ListChecks size={15} /> Bucket List
+          <ListChecks size={15} /> {t('ideas.bucket')}
         </button>
       </div>
 
@@ -103,7 +105,7 @@ export function IdeasPage() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-          placeholder={mode === 'voting' ? 'Neuer Vorschlag...' : 'Was wollt ihr mal machen...'}
+          placeholder={mode === 'voting' ? t('ideas.new_suggestion') : t('ideas.new_bucket')}
           className="flex-1 min-w-0 px-3.5 py-3 bg-[#161822] border border-white/[0.08] rounded-xl text-white text-sm outline-none focus:border-indigo-500/50 transition-colors placeholder:text-zinc-600"
         />
         <button onClick={handleAdd}
@@ -118,12 +120,12 @@ export function IdeasPage() {
       {mode === 'voting' && (
         <>
           <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-3">
-            Vorschläge ({votingSorted.length})
+            {t('ideas.suggestions')} ({votingSorted.length})
           </h4>
           <div className="flex flex-col gap-2.5">
             <AnimatePresence>
               {votingSorted.map((s, i) => {
-                const voted = s.votes.includes(currentUser)
+                const voted = s.votes.some(isMe)
                 const pct = (s.votes.length / maxVotes) * 100
                 return (
                   <motion.div key={s.id} layout
@@ -165,7 +167,7 @@ export function IdeasPage() {
             </AnimatePresence>
             {votingSorted.length === 0 && (
               <p className="text-zinc-600 text-sm py-8 text-center">
-                Noch keine Vorschläge — sei der Erste! 💡
+                {t('ideas.empty')} 💡
               </p>
             )}
           </div>
@@ -177,7 +179,7 @@ export function IdeasPage() {
         <>
           {/* Open */}
           <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-3">
-            Bucket List ({bucketOpen.length})
+            {t('ideas.bucket')} ({bucketOpen.length})
           </h4>
           <div className="flex flex-col gap-2 mb-6">
             <AnimatePresence>
@@ -215,7 +217,7 @@ export function IdeasPage() {
             </AnimatePresence>
             {bucketOpen.length === 0 && (
               <p className="text-zinc-600 text-sm py-6 text-center">
-                Keine offenen Einträge — füg was hinzu! ✨
+                {t('ideas.bucket_empty')} ✨
               </p>
             )}
           </div>
@@ -224,7 +226,7 @@ export function IdeasPage() {
           {bucketDone.length > 0 && (
             <>
               <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-3">
-                Erledigt ({bucketDone.length}) 🎉
+                {t('done')} ({bucketDone.length}) 🎉
               </h4>
               <div className="flex flex-col gap-2">
                 {bucketDone.map((s) => (

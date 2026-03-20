@@ -17,6 +17,7 @@ export function registerUser(id: string, name: string) {
 /**
  * Get a user's display name by ID.
  * - If the ID is in the cache, return the cached name.
+ * - If the ID matches the current user, return their name.
  * - If the ID looks like a plain name (no dashes, short), return as-is (backwards compat).
  * - Otherwise return truncated ID.
  */
@@ -24,6 +25,12 @@ export function getUserName(id: string): string {
   if (!id) return 'Unknown'
   const cached = nameCache.get(id)
   if (cached) return cached
+  // Check if it's the current user (covers the case where cache is empty after reload)
+  const state = useAppStore.getState()
+  if (id === state.currentUserId && state.currentUser) {
+    registerUser(id, state.currentUser)
+    return state.currentUser
+  }
   // Backwards compat: if it's not a UUID, it's probably already a name
   if (id.length < 36 && !id.includes('-')) return id
   return id.slice(0, 8)
@@ -67,6 +74,13 @@ export function getAuthorId(): string {
   const state = useAppStore.getState()
   if (state.demoMode) return state.currentUser
   return state.currentUserId || state.currentUser
+}
+
+/**
+ * Clear the name cache (call on logout).
+ */
+export function clearNameCache() {
+  nameCache.clear()
 }
 
 /**
