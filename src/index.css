@@ -1,0 +1,238 @@
+@import "tailwindcss";
+
+@theme {
+  --color-indigo-400: #818cf8;
+  --color-indigo-500: #6366f1;
+  --color-indigo-600: #4f46e5;
+}
+
+/* Safe area support for Capacitor / iOS notch */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --keyboard-height: 0px;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: #0a0c12;
+}
+
+html {
+  color-scheme: dark;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  overflow: hidden;
+  overscroll-behavior: none;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  color: #e4e4e7;
+}
+
+#root {
+  height: calc(100% - var(--keyboard-height, 0px));
+  overflow: hidden;
+  transition: height 0.25s cubic-bezier(0.17, 0.59, 0.4, 0.99);
+}
+
+/* When keyboard is open, adjust layout */
+.keyboard-open .safe-bottom { height: 0 !important; }
+.keyboard-open .pb-safe { padding-bottom: 4px !important; }
+
+/* Move bottom sheets above keyboard when typing */
+.keyboard-open [data-sheet] {
+  transform: translateY(calc(-1 * var(--keyboard-height, 0px)));
+  transition: transform 0.25s cubic-bezier(0.17, 0.59, 0.4, 0.99);
+}
+
+/*
+  Safe areas: env() doesn't work reliably in Capacitor WKWebView.
+  Use JS-detected values set on :root as --safe-top / --safe-bottom.
+  Fallback: 47px top (iPhone notch), 34px bottom (home indicator).
+*/
+.safe-top {
+  height: var(--safe-top, 47px);
+}
+.safe-bottom {
+  height: var(--safe-bottom, 34px);
+}
+.pt-safe {
+  padding-top: var(--safe-top, 47px);
+}
+.pb-safe {
+  padding-bottom: var(--safe-bottom, 34px);
+}
+
+/* Scrollbar — hide on native, thin on web */
+::-webkit-scrollbar {
+  width: 0px;
+  display: none;
+}
+
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Wave animation for emoji */
+@keyframes wave {
+  0%, 100% { transform: rotate(0deg); }
+  15% { transform: rotate(14deg); }
+  30% { transform: rotate(-8deg); }
+  45% { transform: rotate(14deg); }
+  60% { transform: rotate(-4deg); }
+  75% { transform: rotate(10deg); }
+}
+.animate-wave {
+  animation: wave 2.5s ease-in-out infinite;
+  display: inline-block;
+}
+
+/* Remove iOS input zoom */
+input, select, textarea {
+  font-size: 16px;
+}
+
+select option {
+  background: #161822;
+  color: #e4e4e7;
+}
+
+/* Hide scrollbar for bottom nav */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Leaflet dark mode overrides */
+.leaflet-container {
+  background: #0d1117 !important;
+  font-family: inherit !important;
+}
+.leaflet-control-attribution {
+  background: rgba(10,12,18,0.8) !important;
+  color: #52525b !important;
+  font-size: 8px !important;
+  border: none !important;
+}
+.leaflet-control-attribution a {
+  color: #6366f1 !important;
+}
+.leaflet-popup-content-wrapper {
+  background: #161822 !important;
+  color: #e4e4e7 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+}
+.leaflet-popup-tip {
+  background: #161822 !important;
+}
+.leaflet-popup-content {
+  margin: 10px 14px !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+.leaflet-popup-close-button {
+  color: #71717a !important;
+}
+
+/* City labels on map */
+.city-label {
+  background: rgba(22, 24, 34, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+  padding: 3px 8px !important;
+  color: #e4e4e7 !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+  white-space: nowrap !important;
+}
+.city-label::before {
+  border-top-color: rgba(22, 24, 34, 0.85) !important;
+}
+
+/* Live location pulse */
+@keyframes livePulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(99,102,241,0.4); }
+  50% { box-shadow: 0 0 20px rgba(99,102,241,0.7); }
+}
+
+/* ─── Light Mode ──────────────────────────────────────────── */
+/* Override hardcoded dark colors when .light-mode is on html */
+
+.light-mode {
+  color-scheme: light;
+}
+
+.light-mode,
+.light-mode body {
+  background: #f2f2f7;
+  color: #1c1c1e;
+}
+
+/* Main backgrounds */
+.light-mode .bg-\[\#0a0c12\] { background-color: #f2f2f7; }
+.light-mode .bg-\[\#161822\] { background-color: #ffffff; }
+.light-mode .bg-\[\#0e1015\] { background-color: #ffffff; }
+.light-mode .bg-\[\#12141e\] { background-color: #f8f8fa; }
+.light-mode .bg-\[\#1c1f2e\] { background-color: #e8e8ed; }
+.light-mode .bg-\[\#1a1d2a\] { background-color: #ffffff; }
+.light-mode .bg-\[\#080c14\] { background-color: #e8edf5; }
+
+/* Text colors */
+.light-mode .text-zinc-100 { color: #1c1c1e; }
+.light-mode .text-zinc-200 { color: #2c2c2e; }
+.light-mode .text-zinc-300 { color: #3a3a3c; }
+.light-mode .text-zinc-400 { color: #636366; }
+.light-mode .text-zinc-500 { color: #8e8e93; }
+.light-mode .text-zinc-600 { color: #aeaeb2; }
+.light-mode .text-zinc-700 { color: #c7c7cc; }
+.light-mode .text-white { color: #ffffff; }
+
+/* Borders */
+.light-mode .border-white\/\[0\.06\] { border-color: rgba(0,0,0,0.08); }
+.light-mode .border-white\/\[0\.08\] { border-color: rgba(0,0,0,0.1); }
+.light-mode .border-white\/\[0\.04\] { border-color: rgba(0,0,0,0.05); }
+.light-mode .border-white\/\[0\.03\] { border-color: rgba(0,0,0,0.04); }
+
+/* Inputs */
+.light-mode input,
+.light-mode select,
+.light-mode textarea {
+  color: #1c1c1e;
+}
+.light-mode input::placeholder,
+.light-mode textarea::placeholder {
+  color: #aeaeb2;
+}
+.light-mode .placeholder\:text-zinc-600::placeholder { color: #aeaeb2; }
+
+.light-mode select option {
+  background: #ffffff;
+  color: #1c1c1e;
+}
+
+/* Subtle backgrounds */
+.light-mode .bg-white\/\[0\.03\] { background-color: rgba(0,0,0,0.03); }
+.light-mode .bg-white\/\[0\.02\] { background-color: rgba(0,0,0,0.02); }
+.light-mode .bg-white\/\[0\.04\] { background-color: rgba(0,0,0,0.03); }
+.light-mode .bg-black\/40 { background-color: rgba(0,0,0,0.3); }
+.light-mode .bg-black\/50 { background-color: rgba(0,0,0,0.3); }
+
+/* Scrollbar on light */
+.light-mode ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); }

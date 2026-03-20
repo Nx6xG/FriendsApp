@@ -1,0 +1,24 @@
+{
+  "name": "Friends",
+  "short_name": "Friends",
+  "description": "Die App für deine Crew — Aufgaben, Kosten teilen, Abstimmungen & Chat",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0c12",
+  "theme_color": "#0a0c12",
+  "orientation": "portrait",
+  "categories": ["social", "productivity"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
