@@ -104,10 +104,16 @@ select option {
   color: #e4e4e7;
 }
 
-/* Larger header/nav on web (non-mobile screens) */
+/* On web browsers (not standalone PWA), no safe areas needed */
 @media (min-width: 481px) {
   .safe-top { height: 0px; }
   .safe-bottom { height: 0px; }
+}
+
+/* Standalone PWA on mobile needs safe areas even on web */
+@media (display-mode: standalone) {
+  .safe-top { height: env(safe-area-inset-top, 47px); }
+  .safe-bottom { height: env(safe-area-inset-bottom, 34px); }
 }
 
 /* Hide scrollbar for bottom nav */

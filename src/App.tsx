@@ -94,6 +94,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null | undefined>(undefined)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const setUser = useAppStore((s) => s.setUser)
+  const setCurrentUserId = useAppStore((s) => s.setCurrentUserId)
   const setOnboarded = useAppStore((s) => s.setOnboarded)
   const updateProfile = useAppStore((s) => s.updateProfile)
 
@@ -103,6 +104,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         const name = session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User'
         setUser(name)
+        setCurrentUserId(session.user.id)
         updateProfile({ name })
         setOnboarded(true)
         initSync(session.user.id)
@@ -117,6 +119,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         const name = session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User'
         setUser(name)
+        setCurrentUserId(session.user.id)
         updateProfile({ name })
         setOnboarded(true)
         setShowOnboarding(false)

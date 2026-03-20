@@ -8,6 +8,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { LinkedChips } from '@/components/ui/LinkedChips'
 import { notifyEventCreated } from '@/lib/notifications'
 import { hapticLight } from '@/lib/haptics'
+import { getAuthorId, isMe } from '@/lib/users'
 import { canUseFeature } from '@/lib/plans'
 import { ProPrompt } from '@/components/ui/ProGate'
 import { LinkPicker } from '@/components/ui/LinkPicker'
@@ -110,7 +111,7 @@ export function EventsPage() {
       description: desc.trim() || undefined,
       ...(recurrence !== 'none' && { recurrence }),
       attendees: [currentUser],
-      createdBy: currentUser, createdAt: Date.now(),
+      createdBy: getAuthorId(), createdAt: Date.now(),
     }
     addEvent(group.id, ev)
     hapticLight()
@@ -175,7 +176,7 @@ export function EventsPage() {
                   <Link2 size={13} />
                 </button>
               )}
-              {event.createdBy === currentUser && (
+              {isMe(event.createdBy) && (
                 <button onClick={() => deleteEvent(group.id, event.id)} className="text-zinc-700 active:text-red-400 p-2">
                   <Trash2 size={13} />
                 </button>

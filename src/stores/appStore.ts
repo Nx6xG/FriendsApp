@@ -270,11 +270,13 @@ const DEMO_NOTIFICATIONS: Notification[] = [
 
 interface AppState {
   currentUser: string
+  currentUserId: string
   groups: Group[]
   onboarded: boolean
   demoMode: boolean
 
   setUser: (name: string) => void
+  setCurrentUserId: (id: string) => void
   setOnboarded: (v: boolean) => void
   setDemoMode: (v: boolean) => void
 
@@ -357,22 +359,47 @@ export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
       currentUser: '',
+      currentUserId: '',
       groups: [],
       onboarded: false,
       demoMode: false,
 
       setUser: (name) => set({ currentUser: name }),
+      setCurrentUserId: (id) => set({ currentUserId: id }),
       setOnboarded: (v) => set({ onboarded: v }),
       setDemoMode: (v) => set({ demoMode: v }),
 
-      addGroup: (group) => set((s) => ({ groups: [...s.groups, group] })),
-      deleteGroup: (groupId) => set((s) => ({ groups: s.groups.filter((g) => g.id !== groupId) })),
+      addGroup: (group) => {
+        set((s) => ({ groups: [...s.groups, group] }))
+        if (!get().demoMode) {
+          getCurrentUserId().then(uid => {
+            if (!uid) return
+            db.dbInsertGroup({
+              id: group.id, name: group.name, emoji: group.emoji,
+              invite_code: group.inviteCode, settings: group.settings || {},
+              created_by: uid,
+            }).then(() => {
+              // Add creator as admin member
+              db.dbAddMember(group.id, uid, 'admin')
+              // Add feed item
+              if (group.feed.length > 0) {
+                db.dbInsertFeedItem(group.id, group.feed[0])
+              }
+            })
+          })
+        }
+      },
+      deleteGroup: (groupId) => {
+        set((s) => ({ groups: s.groups.filter((g) => g.id !== groupId) }))
+        if (!get().demoMode) db.dbDeleteGroup(groupId)
+      },
 
       generateInviteCode: (groupId) => {
         const code = uid().toUpperCase().slice(0, 6)
         set((s) => ({
           groups: updateGroup(s.groups, groupId, (g) => ({ ...g, inviteCode: code })),
         }))
+        if (!get().demoMode) db.dbUpdateGroup(groupId, { invite_code: code })
         return code
       },
 
@@ -390,6 +417,11 @@ export const useAppStore = create<AppState>()(
             feed: [{ id: uid(), type: 'system' as const, text: `${s.currentUser} ist der Gruppe beigetreten`, timestamp: Date.now() }, ...g.feed],
           })),
         }))
+        if (!get().demoMode) {
+          getCurrentUserId().then(uid => {
+            if (uid) db.dbAddMember(group.id, uid, 'member')
+          })
+        }
         return group
       },
 

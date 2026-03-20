@@ -10,6 +10,7 @@ import { canUseFeature } from '@/lib/plans'
 import { ProPrompt } from '@/components/ui/ProGate'
 import { startLocationTracking, stopLocationTracking, isTrackingGroup } from '@/lib/location'
 import { uid, cn, timeAgo } from '@/lib/utils'
+import { getAuthorId, isMe } from '@/lib/users'
 import { Avatar } from '@/components/ui/Avatar'
 import type { Group, MapPin as MapPinType } from '@/types'
 
@@ -136,7 +137,7 @@ export function MapPage() {
     const pin: MapPinType = {
       id: uid(), lat: parseFloat(lat), lng: parseFloat(lng),
       label: label.trim(), emoji, type: pinType,
-      addedBy: currentUser, createdAt: Date.now(),
+      addedBy: getAuthorId(), createdAt: Date.now(),
     }
     addMapPin(group.id, pin)
     addFeedItem(group.id, {
@@ -325,7 +326,7 @@ export function MapPage() {
                 {selectedPin.date && <span className="text-[11px] text-zinc-600">{selectedPin.date}</span>}
               </div>
             </div>
-            {selectedPin.addedBy === currentUser && (
+            {isMe(selectedPin.addedBy) && (
               <button onClick={() => { deleteMapPin(group.id, selectedPin.id); setSelectedPin(null) }}
                 className="text-zinc-600 active:text-red-400 p-1">
                 <X size={14} />

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '@/stores/appStore'
 import { uid, cn } from '@/lib/utils'
 import { Avatar } from '@/components/ui/Avatar'
+import { getAuthorId, isMe } from '@/lib/users'
 import type { Group, PlaceRating } from '@/types'
 
 const CATEGORIES = ['Restaurant', 'Café', 'Bar', 'Aktivität', 'Einkauf', 'Sonstiges']
@@ -112,7 +113,7 @@ export function PlacesPage() {
     const place = {
       id: uid(), name: name.trim(), emoji: CATEGORY_EMOJIS[category] || '📌',
       category, address: address.trim() || undefined,
-      ratings: [], addedBy: currentUser, createdAt: Date.now(),
+      ratings: [], addedBy: getAuthorId(), createdAt: Date.now(),
     }
     addPlace(group.id, place)
     addFeedItem(group.id, { type: 'place', text: `${currentUser} hat "${place.name}" hinzugefügt`, timestamp: Date.now() })
@@ -122,7 +123,7 @@ export function PlacesPage() {
   const handleRate = (placeId: string) => {
     if (ratingScore === 0) return
     // eslint-disable-next-line react-hooks/purity
-    const rating = { id: uid(), userId: currentUser, score: ratingScore, comment: ratingComment.trim() || undefined, createdAt: Date.now() }
+    const rating = { id: uid(), userId: getAuthorId(), score: ratingScore, comment: ratingComment.trim() || undefined, createdAt: Date.now() }
     addPlaceRating(group.id, placeId, rating)
     const place = places.find((p) => p.id === placeId)
     if (place) {
@@ -136,7 +137,7 @@ export function PlacesPage() {
   const openRatingForm = (placeId: string) => {
     const place = places.find((p) => p.id === placeId)
     if (place) {
-      const existing = getUniqueRatings(place.ratings).find((r) => r.userId === currentUser)
+      const existing = getUniqueRatings(place.ratings).find((r) => isMe(r.userId))
       if (existing) {
         setRatingScore(existing.score)
         setRatingComment(existing.comment || '')
@@ -207,7 +208,7 @@ export function PlacesPage() {
           const uniqueRatings = getUniqueRatings(place.ratings)
           const avg = getAvgScore(place.ratings)
           const expanded = expandedId === place.id
-          const hasRated = uniqueRatings.some((r) => r.userId === currentUser)
+          const hasRated = uniqueRatings.some((r) => isMe(r.userId))
           const isRating = ratingPlace === place.id
 
           return (

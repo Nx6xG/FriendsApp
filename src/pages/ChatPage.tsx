@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '@/stores/appStore'
 import { uid, timeAgo, cn } from '@/lib/utils'
 import { hapticLight } from '@/lib/haptics'
+import { getAuthorId, isMe } from '@/lib/users'
 import { Avatar } from '@/components/ui/Avatar'
 import { LinkPicker } from '@/components/ui/LinkPicker'
 import type { Group, ChatEmbed, ChatMessage } from '@/types'
@@ -338,14 +339,14 @@ export function ChatPage() {
   const handleSend = () => {
     if (!text.trim()) return
     addMessage(group.id, {
-      id: uid(), authorId: currentUser, text: text.trim(), timestamp: Date.now(),
+      id: uid(), authorId: getAuthorId(), text: text.trim(), timestamp: Date.now(),
     })
     setText('')
   }
 
   const handleSendWithEmbed = (msgText: string, embed: ChatEmbed) => {
     addMessage(group.id, {
-      id: uid(), authorId: currentUser, text: msgText, embed, timestamp: Date.now(),
+      id: uid(), authorId: getAuthorId(), text: msgText, embed, timestamp: Date.now(),
     })
     const labels: Record<string, string> = { poll: 'eine Abstimmung', event_invite: 'ein Event', todo_assign: 'eine Aufgabe' }
     addFeedItem(group.id, {
@@ -373,7 +374,7 @@ export function ChatPage() {
           <p className="text-zinc-600 text-sm text-center py-12">Starte die Konversation! 💬</p>
         )}
         {group.messages.map((m, i) => {
-          const isOwn = m.authorId === currentUser
+          const isOwn = isMe(m.authorId)
           const showAvatar = i === 0 || group.messages[i - 1].authorId !== m.authorId
 
           return (
@@ -488,7 +489,7 @@ export function ChatPage() {
           onConfirm={(items) => {
             items.forEach((item) => {
               addMessage(group.id, {
-                id: uid(), authorId: currentUser,
+                id: uid(), authorId: getAuthorId(),
                 text: '🔗',
                 embed: { type: 'link', linkedItem: item },
                 timestamp: Date.now(),

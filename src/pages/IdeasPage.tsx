@@ -8,6 +8,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { LinkedChips } from '@/components/ui/LinkedChips'
 import { LinkPicker } from '@/components/ui/LinkPicker'
 import { canUseFeature } from '@/lib/plans'
+import { getAuthorId, isMe } from '@/lib/users'
 import { ProPrompt } from '@/components/ui/ProGate'
 import type { Group } from '@/types'
 
@@ -26,7 +27,7 @@ export function IdeasPage() {
     addSuggestion(group.id, {
       id: uid(),
       text: text.trim(),
-      authorId: currentUser,
+      authorId: getAuthorId(),
       votes: [],
       mode,
       createdAt: Date.now(),
@@ -151,7 +152,7 @@ export function IdeasPage() {
                           </div>
                         )}
                       </div>
-                      {s.authorId === currentUser && (
+                      {isMe(s.authorId) && (
                         <button onClick={() => deleteSuggestion(group.id, s.id)}
                           className="text-zinc-700 active:text-red-400 p-1 transition-colors">
                           <Trash2 size={13} />
@@ -203,7 +204,7 @@ export function IdeasPage() {
                     className="text-zinc-700 active:text-indigo-400 p-1 transition-colors shrink-0">
                     <Link2 size={13} />
                   </button>
-                  {s.authorId === currentUser && (
+                  {isMe(s.authorId) && (
                     <button onClick={() => deleteSuggestion(group.id, s.id)}
                       className="text-zinc-700 active:text-red-400 p-1 transition-colors">
                       <Trash2 size={13} />

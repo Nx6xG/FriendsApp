@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 import { useAppStore } from '@/stores/appStore'
 import { fetchUserGroups, fetchProfile, fetchNotifications, fetchGroupPrefs } from './supabaseData'
+import { registerUser } from './users'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
 let channels: RealtimeChannel[] = []
@@ -20,6 +21,24 @@ export async function initSync(userId: string) {
     const store = useAppStore.getState()
 
     // Hydrate store with Supabase data
+    // Register current user in name cache
+    registerUser(userId, profile?.name || store.currentUser)
+
+    // Register all group members in name cache
+    for (const group of (groups.length > 0 ? groups : store.groups)) {
+      if (group.memberRoles) {
+        for (const member of group.memberRoles) {
+          // memberRoles.name could be a display name or UUID
+          // We register the mapping for display
+          registerUser(member.name, member.name)
+        }
+      }
+      // Also register members array entries
+      for (const m of group.members) {
+        if (!m.includes('-')) registerUser(m, m) // backwards compat: name = name
+      }
+    }
+
     // Merge profile: only overwrite fields that have actual values from DB
     const mergedProfile = profile
       ? Object.fromEntries(

@@ -8,6 +8,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { LinkedChips } from '@/components/ui/LinkedChips'
 import { notifyTodoAssigned } from '@/lib/notifications'
 import { hapticSuccess, hapticLight } from '@/lib/haptics'
+import { getAuthorId } from '@/lib/users'
 import { LinkPicker } from '@/components/ui/LinkPicker'
 import type { Group, TodoItem } from '@/types'
 
@@ -236,7 +237,7 @@ function TodoDetail({ todo, group, onClose }: { todo: TodoItem; group: Group; on
               onChange={(e) => setCommentText(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && commentText.trim()) {
-                  addTodoComment(group.id, todo.id, { id: uid(), authorId: currentUser, text: commentText.trim(), createdAt: Date.now() })
+                  addTodoComment(group.id, todo.id, { id: uid(), authorId: getAuthorId(), text: commentText.trim(), createdAt: Date.now() })
                   setCommentText('')
                 }
               }}
@@ -246,7 +247,7 @@ function TodoDetail({ todo, group, onClose }: { todo: TodoItem; group: Group; on
             <button
               onClick={() => {
                 if (!commentText.trim()) return
-                addTodoComment(group.id, todo.id, { id: uid(), authorId: currentUser, text: commentText.trim(), createdAt: Date.now() })
+                addTodoComment(group.id, todo.id, { id: uid(), authorId: getAuthorId(), text: commentText.trim(), createdAt: Date.now() })
                 setCommentText('')
               }}
               className="px-3 bg-indigo-500 text-white rounded-xl active:scale-95 transition-transform"

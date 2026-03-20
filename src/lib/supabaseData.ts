@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { registerUser } from './users'
 import type { Group, TodoItem, Expense, Payment, Suggestion, ChatMessage, GroupEvent, Place, PlaceRating, MapPin as MapPinType, LiveLocation, FeedItem, Notification, UserProfile } from '@/types'
 
 // ─── Fetch all data for a user ────────────────────────────────
@@ -69,11 +70,15 @@ export async function fetchUserGroups(userId: string) {
       inviteCode: g.invite_code,
       members: groupMembers.map((m) => {
         const profile = (allProfiles || []).find((p) => p.id === m.user_id)
-        return profile?.name || 'Unknown'
+        const name = profile?.name || 'Unknown'
+        registerUser(m.user_id, name)
+        return name  // Keep as name for backwards compat — components use names to display
       }),
       memberRoles: groupMembers.map((m) => {
         const profile = (allProfiles || []).find((p) => p.id === m.user_id)
-        return { name: profile?.name || 'Unknown', role: m.role, funRole: m.fun_role }
+        const name = profile?.name || 'Unknown'
+        registerUser(m.user_id, name)
+        return { name, role: m.role, funRole: m.fun_role }
       }),
       settings: g.settings || {},
       todos: groupTodos.map((t): TodoItem => ({
