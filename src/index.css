@@ -114,10 +114,10 @@ select option {
 
 /* Standalone PWA on mobile needs safe areas even on web */
 @media (display-mode: standalone) {
-  .safe-top { height: max(env(safe-area-inset-top, 0px), 47px); }
-  .safe-bottom { height: max(env(safe-area-inset-bottom, 0px), 20px); }
-  .pt-safe { padding-top: max(env(safe-area-inset-top, 0px), 47px); }
-  .pb-safe { padding-bottom: max(env(safe-area-inset-bottom, 0px), 20px); }
+  .safe-top { height: env(safe-area-inset-top, 47px); }
+  .safe-bottom { height: env(safe-area-inset-bottom, 0px); }
+  .pt-safe { padding-top: env(safe-area-inset-top, 47px); }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
 }
 
 /* Hide scrollbar for bottom nav */
