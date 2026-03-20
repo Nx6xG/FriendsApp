@@ -52,18 +52,18 @@ export function SearchPage() {
       {/* Header */}
       <header className="shrink-0 z-20 border-b border-white/[0.06] bg-[#0e1015]">
         <div className="safe-top" />
-        <div className="flex items-center gap-3 px-4" style={{ height: 44 }}>
+        <div className="flex items-center gap-3 px-4 h-[44px] sm:h-[52px]">
           <button onClick={() => navigate(-1)} className="text-zinc-400 active:text-white -ml-1 p-2">
             <ChevronLeft size={22} />
           </button>
           <div className="flex-1 relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t('search.placeholder')}
               autoFocus
-              className="w-full pl-9 pr-3 py-2.5 bg-[#161822] border border-white/[0.08] rounded-xl text-white text-sm outline-none focus:border-indigo-500/50 placeholder:text-zinc-600"
+              className="w-full pl-9 pr-3 py-2 bg-[#161822] border border-white/[0.08] rounded-xl text-white text-[14px] outline-none focus:border-indigo-500/50 placeholder:text-zinc-600"
             />
           </div>
         </div>

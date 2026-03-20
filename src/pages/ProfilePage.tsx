@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useT } from '@/lib/i18n'
 
-const EMOJIS = ['😎', '🤙', '🔥', '✨', '🎯', '🧠', '💜', '🌊', '🎮', '🎵', '🏔️', '☕']
+const EMOJIS = ['😎', '🤙', '🔥', '✨', '🎯', '🧠', '💜', '🌊', '🎮', '🎵', '🏔️', '☕', '🦊', '🐻', '🌸', '🍀', '⭐', '🎨', '🚀', '🌈', '🦁', '🐱', '🎭', '🏄']
 const STATUSES_DE = [
   'Auf der Suche nach Abenteuern',
   'Immer ready 🤙',
@@ -78,6 +78,7 @@ export function ProfilePage() {
   const [supportTitle, setSupportTitle] = useState('')
   const [supportBody, setSupportBody] = useState('')
   const [supportSent, setSupportSent] = useState(false)
+  const [showPrivacy, setShowPrivacy] = useState(false)
 
   const hiddenGroups = profile.hiddenGroups || []
   const statuses = profile.language === 'en' ? STATUSES_EN : STATUSES_DE
@@ -104,7 +105,7 @@ export function ProfilePage() {
       {/* Header */}
       <header className="shrink-0 z-20 border-b border-white/[0.06] bg-[#0e1015]">
         <div className="safe-top" />
-        <div className="flex items-center gap-3 px-4" style={{ height: 44 }}>
+        <div className="flex items-center gap-3 px-4 h-[44px] sm:h-[52px]">
           <button onClick={() => navigate(-1)} className="text-zinc-400 active:text-white -ml-1 p-1">
             <ChevronLeft size={22} />
           </button>
@@ -152,13 +153,31 @@ export function ProfilePage() {
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
             className="overflow-hidden mt-4 pt-3 border-t border-white/[0.06]">
             <p className="text-[11px] text-zinc-500 mb-2">{t('profile.choose_avatar')}</p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 mb-3">
               {EMOJIS.map((e) => (
                 <button key={e} onClick={() => { updateProfile({ emoji: e }); setShowEmojiPicker(false) }}
                   className={cn('text-2xl p-1.5 rounded-xl border transition-colors',
                     profile.emoji === e ? 'border-indigo-500 bg-indigo-500/10' : 'border-white/[0.06] bg-[#0e1015]'
                   )}>{e}</button>
               ))}
+            </div>
+            <div className="flex gap-2 items-center">
+              <input
+                type="text"
+                placeholder="🔍"
+                maxLength={2}
+                className="w-12 h-12 text-center text-2xl bg-[#0e1015] border border-white/[0.08] rounded-xl outline-none focus:border-indigo-500/50"
+                onInput={(e) => {
+                  const val = (e.target as HTMLInputElement).value
+                  if (val && /\p{Emoji}/u.test(val)) {
+                    updateProfile({ emoji: val })
+                    setShowEmojiPicker(false)
+                  }
+                }}
+              />
+              <span className="text-[11px] text-zinc-600">
+                {profile.language === 'de' ? 'Eigenes Emoji eingeben' : 'Type custom emoji'}
+              </span>
             </div>
           </motion.div>
         )}
@@ -232,6 +251,37 @@ export function ProfilePage() {
         </div>
       </div>
 
+      {/* Pending invites */}
+      {(profile.pendingInvites || []).length > 0 && (
+        <div className="mx-4 mt-5">
+          <h3 className="text-[11px] font-bold text-amber-400/70 uppercase tracking-widest mb-2 px-1">
+            {profile.language === 'de' ? 'Ausstehende Einladungen' : 'Pending invitations'}
+          </h3>
+          <div className="bg-[#161822] border border-white/[0.06] rounded-2xl overflow-hidden">
+            {(profile.pendingInvites || []).map((inv, i) => (
+              <div key={inv.groupId}
+                className={cn('flex items-center gap-3 px-4 py-3', i > 0 && 'border-t border-white/[0.04]')}>
+                <span className="text-xl">{inv.groupEmoji}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-medium truncate">{inv.groupName}</p>
+                  <p className="text-[11px] text-zinc-600">{inv.members.length} {profile.language === 'de' ? 'Mitglieder' : 'members'}</p>
+                </div>
+                <button onClick={() => { navigate(`/join/${groups.find(g => g.id === inv.groupId)?.inviteCode || inv.groupId}`) }}
+                  className="px-3 py-1.5 bg-indigo-500 text-white text-[11px] font-bold rounded-lg active:scale-95">
+                  {profile.language === 'de' ? 'Beitreten' : 'Join'}
+                </button>
+                <button onClick={() => {
+                  updateProfile({ pendingInvites: (profile.pendingInvites || []).filter(p => p.groupId !== inv.groupId) })
+                }}
+                  className="text-zinc-600 active:text-red-400 p-1">
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Pro status */}
       {profile.plan === 'pro' ? (
         <div className="mx-4 mt-5 bg-gradient-to-r from-emerald-600/20 to-indigo-600/20 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-3">
@@ -262,9 +312,12 @@ export function ProfilePage() {
           <div className="flex-1">
             <p className="text-[14px] font-bold text-indigo-300">Friends Pro</p>
             <p className="text-[11px] text-zinc-500">
-              {profile.language === 'de' ? 'Alle Features freischalten' : 'Unlock all features'}
+              {profile.language === 'de' ? '3 Tage kostenlos testen' : '3-day free trial'}
             </p>
           </div>
+          <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full shrink-0">
+            {profile.language === 'de' ? 'Gratis testen' : 'Try free'}
+          </span>
           <ChevronRight size={16} className="text-indigo-400/50" />
         </button>
       )}
@@ -290,10 +343,9 @@ export function ProfilePage() {
             label={profile.language === 'de' ? 'Support & Feedback' : 'Support & Feedback'}
             sub={profile.language === 'de' ? 'Hilfe, Feedback oder Probleme melden' : 'Help, feedback or report issues'}
             onClick={() => { setShowSupport(true); setSupportSent(false); setSupportTitle(''); setSupportBody('') }} />
-          <SettingsRow icon={Shield} label={t('settings.privacy')} sub={t('settings.privacy_sub')} />
+          <SettingsRow icon={Shield} label={t('settings.privacy')} sub={t('settings.privacy_sub')}
+            onClick={() => setShowPrivacy(true)} />
           <SettingsRow icon={Info} label={t('settings.about')} sub="Version 1.0.0 — Made with ❤️" />
-          <SettingsRow icon={LogOut} label={t('settings.load_demo')} sub={t('settings.load_demo_sub')}
-            onClick={() => setShowConfirmDemo(true)} />
           <SettingsRow icon={Trash2} label={t('settings.delete_all')} sub={t('settings.delete_all_sub')} danger
             onClick={() => setShowConfirmReset(true)} />
           <SettingsRow icon={LogOut}
@@ -430,6 +482,52 @@ export function ProfilePage() {
                 </div>
               </>
             )}
+          </motion.div>
+        </div>
+      )}
+
+      {/* Privacy popup */}
+      {showPrivacy && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6" onClick={() => setShowPrivacy(false)}>
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative bg-[#1a1d2a] border border-white/[0.08] rounded-2xl p-5 w-full max-w-[340px]">
+            <div className="text-center mb-4">
+              <span className="text-3xl">🔒</span>
+              <p className="text-[16px] font-bold mt-2">{t('settings.privacy')}</p>
+            </div>
+            <div className="space-y-3 text-[13px] text-zinc-400 leading-relaxed">
+              <p>
+                {profile.language === 'de'
+                  ? '• Deine Daten werden verschlüsselt auf Servern in der EU (Frankfurt) gespeichert.'
+                  : '• Your data is stored encrypted on EU servers (Frankfurt).'}
+              </p>
+              <p>
+                {profile.language === 'de'
+                  ? '• Wir nutzen Supabase als Datenbank-Provider mit Row Level Security — nur du und deine Gruppenmitglieder haben Zugriff auf eure Daten.'
+                  : '• We use Supabase as database provider with Row Level Security — only you and your group members can access your data.'}
+              </p>
+              <p>
+                {profile.language === 'de'
+                  ? '• Dein Passwort wird niemals im Klartext gespeichert.'
+                  : '• Your password is never stored in plain text.'}
+              </p>
+              <p>
+                {profile.language === 'de'
+                  ? '• Du kannst jederzeit alle deine Daten löschen (Einstellungen → Alle Daten löschen).'
+                  : '• You can delete all your data at any time (Settings → Delete all data).'}
+              </p>
+              <p>
+                {profile.language === 'de'
+                  ? '• Wir verkaufen keine Daten an Dritte.'
+                  : '• We do not sell data to third parties.'}
+              </p>
+            </div>
+            <button onClick={() => setShowPrivacy(false)}
+              className="mt-5 w-full py-2.5 rounded-xl bg-indigo-500 text-white text-[13px] font-bold active:scale-95">
+              OK
+            </button>
           </motion.div>
         </div>
       )}

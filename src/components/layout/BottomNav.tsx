@@ -69,7 +69,7 @@ export function BottomNav({ groupId }: { groupId: string }) {
 
       {/* Bottom nav bar — 49px content like iOS, plus safe area */}
       <nav className="shrink-0 z-20 border-t border-white/[0.06] bg-[#0e1015]">
-        <div className="w-full flex" style={{ height: 49 }}>
+        <div className="w-full flex h-[49px] sm:h-[56px]">
           {navTabs.map((tab) => {
             const active = isActive(tab.path)
             const Icon = tab.icon
@@ -79,8 +79,8 @@ export function BottomNav({ groupId }: { groupId: string }) {
                   'flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors duration-150',
                   active ? 'text-indigo-400' : 'text-zinc-600 active:text-zinc-300'
                 )}>
-                <Icon size={18} strokeWidth={active ? 2.2 : 1.5} />
-                <span className={cn('text-[9px]', active ? 'font-bold' : 'font-medium')}>{t(`tab.${tab.key}` as 'tab.feed')}</span>
+                <Icon size={18} className="sm:!w-5 sm:!h-5" strokeWidth={active ? 2.2 : 1.5} />
+                <span className={cn('text-[9px] sm:text-[11px]', active ? 'font-bold' : 'font-medium')}>{t(`tab.${tab.key}` as 'tab.feed')}</span>
               </button>
             )
           })}
@@ -90,8 +90,8 @@ export function BottomNav({ groupId }: { groupId: string }) {
                 'flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors duration-150',
                 isMoreActive ? 'text-indigo-400' : 'text-zinc-600 active:text-zinc-300'
               )}>
-              <MoreHorizontal size={18} strokeWidth={isMoreActive ? 2.2 : 1.5} />
-              <span className={cn('text-[9px]', isMoreActive ? 'font-bold' : 'font-medium')}>{t('more')}</span>
+              <MoreHorizontal size={18} className="sm:!w-5 sm:!h-5" strokeWidth={isMoreActive ? 2.2 : 1.5} />
+              <span className={cn('text-[9px] sm:text-[11px]', isMoreActive ? 'font-bold' : 'font-medium')}>{t('more')}</span>
             </button>
           )}
         </div>

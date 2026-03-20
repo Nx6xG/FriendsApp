@@ -73,7 +73,7 @@ const translations = {
   'settings.language': { de: 'Sprache', en: 'Language' },
   'settings.other': { de: 'Sonstiges', en: 'Other' },
   'settings.privacy': { de: 'Datenschutz', en: 'Privacy' },
-  'settings.privacy_sub': { de: 'Alle Daten bleiben auf deinem Gerät', en: 'All data stays on your device' },
+  'settings.privacy_sub': { de: 'Daten verschlüsselt in der EU gespeichert', en: 'Data encrypted and stored in EU' },
   'settings.about': { de: 'Über Friends', en: 'About Friends' },
   'settings.load_demo': { de: 'Demo laden', en: 'Load demo' },
   'settings.load_demo_sub': { de: 'App mit Beispieldaten füllen', en: 'Fill app with example data' },

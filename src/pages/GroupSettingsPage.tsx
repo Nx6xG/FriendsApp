@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useOutletContext, useNavigate } from 'react-router-dom'
-import { Plus, X, Trash2, Shield, Crown, Eye, Pencil, Copy, Share2, RefreshCw } from 'lucide-react'
+import { Plus, X, Trash2, Shield, Crown, Eye, Pencil, Share2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAppStore } from '@/stores/appStore'
 import { cn } from '@/lib/utils'
@@ -8,7 +8,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { ALL_TABS, DEFAULT_GROUP_PREFS } from '@/lib/tabs'
 import type { Group, MemberRole, TagDef } from '@/types'
 
-const EMOJIS = ['🏙️', '🏖️', '🎮', '🍕', '⚽', '🎵', '📸', '🧗', '🎲', '🏠', '💼', '🎓']
+const EMOJIS = ['👥', '🏙️', '🏖️', '🎮', '🍕', '⚽', '🎵', '📸', '🧗', '🎲', '🏠', '💼', '🎓', '🏋️', '🚗', '🍺', '🎭', '🌍', '❤️', '🎪']
 
 const TAG_COLORS = ['#818cf8', '#f472b6', '#34d399', '#fbbf24', '#f87171', '#38bdf8', '#a78bfa', '#fb923c']
 
@@ -130,42 +130,24 @@ export function GroupSettingsPage() {
       {isAdmin && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }}
           className="bg-[#161822] border border-white/[0.06] rounded-2xl p-4 mb-5">
-          <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Einladungscode</h4>
-          <p className="text-[11px] text-zinc-600 mb-3">Teile den Code damit andere der Gruppe beitreten können.</p>
-
-          {group.inviteCode ? (
-            <div className="flex items-center gap-2">
-              <div className="flex-1 px-4 py-3 bg-[#0e1015] border border-white/[0.06] rounded-xl text-center">
-                <span className="text-[20px] font-extrabold tracking-[0.15em] text-indigo-400">{group.inviteCode}</span>
-              </div>
-              <button onClick={() => navigator.clipboard.writeText(group.inviteCode!)}
-                className="p-3 bg-[#0e1015] border border-white/[0.06] rounded-xl text-zinc-400 active:text-indigo-400 transition-colors">
-                <Copy size={16} />
-              </button>
-              <button onClick={() => {
-                if (navigator.share) {
-                  navigator.share({ title: `${group.emoji} ${group.name}`, text: `Tritt unserer Gruppe bei! Code: ${group.inviteCode}` })
-                } else {
-                  navigator.clipboard.writeText(`Tritt unserer Gruppe "${group.name}" bei! Code: ${group.inviteCode}`)
-                }
-              }}
-                className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-indigo-400 active:text-indigo-300 transition-colors">
-                <Share2 size={16} />
-              </button>
-            </div>
-          ) : (
-            <button onClick={() => generateInviteCode(group.id)}
-              className="w-full py-3 bg-indigo-500 text-white rounded-xl font-bold text-sm active:scale-[0.98] transition-all">
-              Code generieren
-            </button>
-          )}
-
-          {group.inviteCode && (
-            <button onClick={() => generateInviteCode(group.id)}
-              className="flex items-center justify-center gap-1.5 w-full mt-2 py-2 text-[11px] text-zinc-500 active:text-zinc-300">
-              <RefreshCw size={11} /> Neuen Code generieren
-            </button>
-          )}
+          <button onClick={() => {
+            // Auto-generate code if none exists
+            if (!group.inviteCode) generateInviteCode(group.id)
+            // Small delay to ensure code is set
+            setTimeout(() => {
+              const code = useAppStore.getState().groups.find(g => g.id === group.id)?.inviteCode || group.inviteCode
+              const url = `${window.location.origin}/join/${code}`
+              if (navigator.share) {
+                navigator.share({ title: `${group.emoji} ${group.name}`, text: `Tritt unserer Gruppe "${group.name}" bei!`, url })
+              } else {
+                navigator.clipboard.writeText(url)
+              }
+            }, 100)
+          }}
+            className="w-full py-3.5 bg-indigo-500 text-white rounded-xl font-bold text-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+            <Share2 size={16} />
+            Mitglieder einladen
+          </button>
         </motion.div>
       )}
 

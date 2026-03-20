@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Bell, UserPlus, Search } from 'lucide-react'
+import { Plus, Bell, Search } from 'lucide-react'
 import { useAppStore } from '@/stores/appStore'
 import { Avatar } from '@/components/ui/Avatar'
 import { NewGroupSheet } from '@/components/groups/NewGroupSheet'
@@ -10,29 +10,13 @@ import { canCreateGroup } from '@/lib/plans'
 import { useT } from '@/lib/i18n'
 
 export function HomePage() {
-  const { currentUser, groups, notifications, profile, joinGroup, demoMode, setDemoMode } = useAppStore()
+  const { currentUser, groups, notifications, profile, demoMode, setDemoMode } = useAppStore()
   const navigate = useNavigate()
   const t = useT()
   const [showNew, setShowNew] = useState(false)
-  const [showJoin, setShowJoin] = useState(false)
-  const [joinCode, setJoinCode] = useState('')
-  const [joinError, setJoinError] = useState('')
   const [showDemoPrompt, setShowDemoPrompt] = useState(false)
   const [showProPrompt, setShowProPrompt] = useState(false)
   const unreadCount = notifications.filter((n) => !n.read).length
-
-  const handleJoin = () => {
-    if (!joinCode.trim()) return
-    setJoinError('')
-    const group = joinGroup(joinCode.trim())
-    if (group) {
-      setShowJoin(false)
-      setJoinCode('')
-      navigate(`/group/${group.id}`)
-    } else {
-      setJoinError(profile.language === 'de' ? 'Ungültiger Code' : 'Invalid code')
-    }
-  }
 
   const hiddenGroups = profile.hiddenGroups || []
   const visibleGroups = groups.filter((g) => !hiddenGroups.includes(g.id))
@@ -55,10 +39,11 @@ export function HomePage() {
               {profile.status && <p className="text-[11px] text-zinc-600 mt-0.5">{profile.status}</p>}
             </div>
           </div>
-          <button onClick={() => navigate('/search')} className="p-2 mt-1 text-zinc-400 active:text-white">
-            <Search size={22} />
+          <div className="flex items-center gap-1">
+          <button onClick={() => navigate('/search')} className="p-2 text-zinc-400 active:text-white">
+            <Search size={20} />
           </button>
-          <button onClick={() => navigate('/notifications')} className="relative p-2 -mr-2 mt-1 text-zinc-400 active:text-white">
+          <button onClick={() => navigate('/notifications')} className="relative p-2 text-zinc-400 active:text-white">
             <Bell size={22} />
             {unreadCount > 0 && (
               <span className="absolute top-1 right-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center"
@@ -67,6 +52,7 @@ export function HomePage() {
               </span>
             )}
           </button>
+          </div>
         </div>
         <p className="text-zinc-500 text-sm mt-5 mb-3">{t('home.your_groups')}</p>
       </div>
@@ -137,40 +123,7 @@ export function HomePage() {
             <Plus size={16} /> {t('home.new_group')}
             {!canCreateGroup() && <span className="text-[9px] text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded-full">⚡Pro</span>}
           </button>
-          <button
-            onClick={() => demoMode ? setShowDemoPrompt(true) : setShowJoin(!showJoin)}
-            className="flex-1 py-3.5 border-2 border-dashed border-white/[0.08] rounded-2xl text-emerald-400 font-semibold text-sm flex items-center justify-center gap-2 active:bg-white/[0.02] transition-colors"
-          >
-            <UserPlus size={16} /> {profile.language === 'de' ? 'Beitreten' : 'Join'}
-          </button>
         </div>
-
-        {/* Join group form */}
-        {showJoin && (
-          <div className="mt-3 bg-[#161822] border border-white/[0.06] rounded-2xl p-4">
-            <p className="text-[12px] text-zinc-400 mb-3">
-              {profile.language === 'de' ? 'Einladungscode eingeben:' : 'Enter invite code:'}
-            </p>
-            <div className="flex gap-2">
-              <input
-                value={joinCode}
-                onChange={(e) => { setJoinCode(e.target.value.toUpperCase()); setJoinError('') }}
-                onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
-                placeholder="ABC123"
-                autoFocus
-                maxLength={6}
-                className="flex-1 px-4 py-3 bg-[#0e1015] border border-white/[0.08] rounded-xl text-white text-center text-[18px] font-bold tracking-[0.2em] outline-none focus:border-emerald-500/50 placeholder:text-zinc-700 placeholder:tracking-[0.2em]"
-              />
-              <button onClick={handleJoin} disabled={joinCode.length < 4}
-                className="px-5 bg-emerald-500 text-white rounded-xl font-bold text-sm active:scale-95 transition-all disabled:opacity-30">
-                OK
-              </button>
-            </div>
-            {joinError && (
-              <p className="text-red-400 text-[12px] mt-2 text-center">{joinError}</p>
-            )}
-          </div>
-        )}
       </div>
 
       {showNew && <NewGroupSheet onClose={() => setShowNew(false)} />}

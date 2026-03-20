@@ -110,6 +110,14 @@ export interface ChatMessage {
 // Profile / Settings
 export type PlanType = 'free' | 'pro'
 
+export interface PendingInvite {
+  groupId: string
+  groupName: string
+  groupEmoji: string
+  members: string[]
+  invitedAt: number
+}
+
 export interface UserProfile {
   name: string
   emoji: string
@@ -121,6 +129,7 @@ export interface UserProfile {
   hiddenGroups?: string[]
   plan?: PlanType
   planExpiresAt?: number
+  pendingInvites?: PendingInvite[]
 }
 
 export interface FeedItem {

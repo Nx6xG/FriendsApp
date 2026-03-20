@@ -5,7 +5,7 @@ import { useAppStore } from '@/stores/appStore'
 import { uid } from '@/lib/utils'
 import type { Group } from '@/types'
 
-const EMOJIS = ['🏙️', '🏖️', '🎮', '🍕', '⚽', '🎵', '📸', '🧗', '🎲', '🏠']
+const EMOJIS = ['👥', '🏙️', '🏖️', '🎮', '🍕', '⚽', '🎵', '📸', '🧗', '🎲', '🏠', '💼', '🎓', '🏋️', '🚗', '🍺', '🎭', '🌍', '❤️', '🎪']
 
 interface Props {
   onClose: () => void
@@ -75,7 +75,7 @@ export function NewGroupSheet({ onClose }: Props) {
         <h3 className="font-bold text-lg mb-5">Neue Gruppe</h3>
 
         {/* Emoji picker */}
-        <div className="flex gap-2 flex-wrap mb-4">
+        <div className="flex gap-2 flex-wrap mb-2">
           {EMOJIS.map((e) => (
             <button
               key={e}
@@ -89,6 +89,16 @@ export function NewGroupSheet({ onClose }: Props) {
               {e}
             </button>
           ))}
+          <input
+            type="text"
+            placeholder="✏️"
+            maxLength={2}
+            className="w-[46px] h-[46px] text-center text-2xl bg-[#0e1015] border border-white/[0.06] rounded-xl outline-none focus:border-indigo-500/50"
+            onInput={(e) => {
+              const val = (e.target as HTMLInputElement).value
+              if (val && /\p{Emoji}/u.test(val)) setEmoji(val)
+            }}
+          />
         </div>
 
         <input

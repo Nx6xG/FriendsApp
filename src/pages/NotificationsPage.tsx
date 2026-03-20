@@ -29,7 +29,7 @@ export function NotificationsPage() {
       {/* Header */}
       <header className="shrink-0 z-20 border-b border-white/[0.06] bg-[#0e1015]">
         <div className="safe-top" />
-        <div className="flex items-center gap-3 px-4" style={{ height: 44 }}>
+        <div className="flex items-center gap-3 px-4 h-[44px] sm:h-[52px]">
         <button onClick={() => navigate(-1)} className="text-zinc-400 active:text-white -ml-1 p-1">
           <ChevronLeft size={22} />
         </button>

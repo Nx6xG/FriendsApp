@@ -17,8 +17,8 @@ export const ALL_TABS: TabDef[] = [
   { key: 'ideas', icon: Lightbulb, label: 'Ideen', path: '/ideas', emoji: '💡' },
   { key: 'events', icon: Calendar, label: 'Events', path: '/events', emoji: '📅' },
   { key: 'places', icon: MapPin, label: 'Orte', path: '/places', emoji: '📍' },
-  { key: 'stats', icon: BarChart3, label: 'Stats', path: '/stats', emoji: '📊' },
   { key: 'map', icon: Globe, label: 'Karte', path: '/map', emoji: '🗺️' },
+  { key: 'stats', icon: BarChart3, label: 'Stats', path: '/stats', emoji: '📊' },
 ]
 
 export const DEFAULT_NAV_KEYS = ['feed', 'todos', 'expenses', 'chat']

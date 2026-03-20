@@ -104,6 +104,12 @@ select option {
   color: #e4e4e7;
 }
 
+/* Larger header/nav on web (non-mobile screens) */
+@media (min-width: 481px) {
+  .safe-top { height: 0px; }
+  .safe-bottom { height: 0px; }
+}
+
 /* Hide scrollbar for bottom nav */
 .scrollbar-none {
   -ms-overflow-style: none;

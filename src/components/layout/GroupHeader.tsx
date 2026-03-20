@@ -9,8 +9,8 @@ export function GroupHeader({ group }: { group: Group }) {
     <header className="shrink-0 z-20 border-b border-white/[0.06] bg-[#0e1015]">
       {/* Safe area spacer — background extends behind notch */}
       <div className="safe-top" />
-      {/* Content — fixed 44px like iOS nav bar */}
-      <div className="flex items-center gap-3 px-4" style={{ height: 44 }}>
+      {/* Content — 44px on mobile, 52px on web */}
+      <div className="flex items-center gap-3 px-4 h-[44px] sm:h-[52px]">
         <button
           onClick={() => navigate('/')}
           className="text-zinc-400 active:text-white transition-colors -ml-1 p-1"

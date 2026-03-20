@@ -23,6 +23,7 @@ import { MapPage } from '@/pages/MapPage'
 import { GroupSettingsPage } from '@/pages/GroupSettingsPage'
 import { SearchPage } from '@/pages/SearchPage'
 import { PaywallPage } from '@/pages/PaywallPage'
+import { JoinPage } from '@/pages/JoinPage'
 
 function AppRoutes() {
   return (
@@ -31,6 +32,7 @@ function AppRoutes() {
         <Route path="/" element={<HomePage />} />
       <Route path="/search" element={<SearchPage />} />
       <Route path="/pro" element={<PaywallPage />} />
+      <Route path="/join/:code" element={<JoinPage />} />
       <Route path="/notifications" element={<NotificationsPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/group/:groupId" element={<GroupLayout />}>

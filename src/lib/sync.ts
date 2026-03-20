@@ -20,14 +20,21 @@ export async function initSync(userId: string) {
     const store = useAppStore.getState()
 
     // Hydrate store with Supabase data
+    // Merge profile: only overwrite fields that have actual values from DB
+    const mergedProfile = profile
+      ? Object.fromEntries(
+          Object.entries({ ...store.profile, ...profile }).map(([k, v]) =>
+            [k, v !== null && v !== undefined ? v : store.profile[k as keyof typeof store.profile]]
+          )
+        )
+      : store.profile
+
     useAppStore.setState({
-      groups: groups.length > 0 ? groups : store.groups, // keep local if no remote data
+      groups: groups.length > 0 ? groups : store.groups,
       notifications: notifications.length > 0 ? notifications : store.notifications,
       groupPrefs: Object.keys(groupPrefs).length > 0 ? groupPrefs : store.groupPrefs,
-      ...(profile && {
-        profile: { ...store.profile, ...profile },
-        currentUser: profile.name || store.currentUser,
-      }),
+      profile: mergedProfile as typeof store.profile,
+      currentUser: profile?.name || store.currentUser,
       onboarded: true,
     })
 
