@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import { useAppStore } from '@/stores/appStore'
-import { fetchUserGroups, fetchProfile, fetchNotifications, fetchGroupPrefs } from './supabaseData'
+import { fetchUserGroups, fetchProfile, fetchNotifications, fetchGroupPrefs, dbEnsureProfile } from './supabaseData'
 import { registerUser, clearNameCache } from './users'
 import { log, logError } from './logger'
 import type { RealtimeChannel } from '@supabase/supabase-js'
@@ -30,6 +30,13 @@ export async function initSync(userId: string) {
     log('[Sync] Fetched:', groups.length, 'groups')
 
     const store = useAppStore.getState()
+
+    // Ensure profile exists in DB (handles case where auth.users exists but profile was deleted)
+    if (!profile) {
+      const name = store.currentUser || store.profile.name || 'User'
+      log('[Sync] No profile found, creating one for:', name)
+      await dbEnsureProfile(userId, name)
+    }
 
     // Register current user
     registerUser(userId, profile?.name || store.currentUser)

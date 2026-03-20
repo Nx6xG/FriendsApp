@@ -362,6 +362,13 @@ export const dbUpdateNotification = (id: string, updates: Record<string, unknown
   supabase.from('notifications').update(updates).eq('id', id)
 
 // Profile
+/** Ensure a profile exists for the user (upsert on id) */
+export const dbEnsureProfile = (userId: string, name: string) =>
+  supabase.from('profiles').upsert(
+    { id: userId, name },
+    { onConflict: 'id', ignoreDuplicates: true }
+  )
+
 export const dbUpdateProfile = (userId: string, updates: Partial<UserProfile>) => {
   const m: Record<string, unknown> = {}
   if (updates.name !== undefined) m.name = updates.name
