@@ -372,26 +372,31 @@ export const useAppStore = create<AppState>()(
       addGroup: (group) => {
         set((s) => ({ groups: [...s.groups, group] }))
         if (!get().demoMode) {
-          getCurrentUserId().then(uid => {
+          getCurrentUserId().then(async (uid) => {
             if (!uid) return
-            db.dbInsertGroup({
+            const { error: groupErr } = await db.dbInsertGroup({
               id: group.id, name: group.name, emoji: group.emoji,
               invite_code: group.inviteCode, settings: group.settings || {},
               created_by: uid,
-            }).then(() => {
-              // Add creator as admin member
-              db.dbAddMember(group.id, uid, 'admin')
-              // Add feed item
-              if (group.feed.length > 0) {
-                db.dbInsertFeedItem(group.id, group.feed[0])
-              }
             })
+            if (groupErr) { console.error('Insert group failed:', groupErr); return }
+
+            const { error: memberErr } = await db.dbAddMember(group.id, uid, 'admin')
+            if (memberErr) console.error('Insert member failed:', memberErr)
+
+            if (group.feed.length > 0) {
+              db.dbInsertFeedItem(group.id, group.feed[0])
+            }
           })
         }
       },
       deleteGroup: (groupId) => {
         set((s) => ({ groups: s.groups.filter((g) => g.id !== groupId) }))
-        if (!get().demoMode) db.dbDeleteGroup(groupId)
+        if (!get().demoMode) {
+          db.dbDeleteGroup(groupId).then(({ error }) => {
+            if (error) console.error('Delete group failed:', error)
+          })
+        }
       },
 
       generateInviteCode: (groupId) => {
