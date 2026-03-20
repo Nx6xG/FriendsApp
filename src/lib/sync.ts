@@ -5,12 +5,20 @@ import { registerUser } from './users'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
 let channels: RealtimeChannel[] = []
+let syncing = false
+let synced = false
 
 /**
- * Initial sync: fetch all data from Supabase and hydrate the Zustand store.
+ * Initial sync: fetch all data from Supabase and hydrate the store.
+ * Runs only once per session.
  */
 export async function initSync(userId: string) {
+  if (syncing || synced) return
+  syncing = true
+
   try {
+    console.log('[Sync] Starting for user:', userId)
+
     const [groups, profile, notifications, groupPrefs] = await Promise.all([
       fetchUserGroups(userId),
       fetchProfile(userId),
@@ -18,28 +26,14 @@ export async function initSync(userId: string) {
       fetchGroupPrefs(userId),
     ])
 
+    console.log('[Sync] Fetched:', groups.length, 'groups')
+
     const store = useAppStore.getState()
 
-    // Hydrate store with Supabase data
-    // Register current user in name cache
+    // Register current user
     registerUser(userId, profile?.name || store.currentUser)
 
-    // Register all group members in name cache
-    for (const group of (groups.length > 0 ? groups : store.groups)) {
-      if (group.memberRoles) {
-        for (const member of group.memberRoles) {
-          // memberRoles.name could be a display name or UUID
-          // We register the mapping for display
-          registerUser(member.name, member.name)
-        }
-      }
-      // Also register members array entries
-      for (const m of group.members) {
-        if (!m.includes('-')) registerUser(m, m) // backwards compat: name = name
-      }
-    }
-
-    // Merge profile: only overwrite fields that have actual values from DB
+    // Merge profile carefully — don't overwrite local values with null
     const mergedProfile = profile
       ? Object.fromEntries(
           Object.entries({ ...store.profile, ...profile }).map(([k, v]) =>
@@ -48,69 +42,71 @@ export async function initSync(userId: string) {
         )
       : store.profile
 
+    // Set everything in the store
     useAppStore.setState({
       groups: groups.length > 0 ? groups : store.groups,
       notifications: notifications.length > 0 ? notifications : store.notifications,
       groupPrefs: Object.keys(groupPrefs).length > 0 ? groupPrefs : store.groupPrefs,
       profile: mergedProfile as typeof store.profile,
       currentUser: profile?.name || store.currentUser,
+      currentUserId: userId,
       onboarded: true,
     })
 
-    // Start realtime subscriptions
+    // Start realtime
     const groupIds = (groups.length > 0 ? groups : store.groups).map((g) => g.id)
     if (groupIds.length > 0) {
       subscribeToChanges(userId, groupIds)
     }
+
+    synced = true
+    console.log('[Sync] Complete')
   } catch (e) {
-    console.error('Sync failed:', e)
+    console.error('[Sync] Failed:', e)
+  } finally {
+    syncing = false
   }
 }
 
 /**
- * Subscribe to realtime changes for the user's groups.
+ * Force a full re-sync (e.g. after creating/joining a group).
+ */
+export async function resync() {
+  const userId = useAppStore.getState().currentUserId
+  if (!userId) return
+  synced = false
+  syncing = false
+  await initSync(userId)
+}
+
+/**
+ * Subscribe to realtime changes for all group data.
  */
 function subscribeToChanges(userId: string, groupIds: string[]) {
-  // Cleanup existing subscriptions
   cleanup()
 
-  // Messages (most important for chat)
-  const msgChannel = supabase
-    .channel('messages')
-    .on('postgres_changes', {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'messages',
-    }, (payload) => {
-      const m = payload.new
-      if (!groupIds.includes(m.group_id)) return
-      const store = useAppStore.getState()
-      // Don't add if already exists (from optimistic update)
-      const group = store.groups.find((g) => g.id === m.group_id)
-      if (group?.messages.some((msg) => msg.id === m.id)) return
-
-      useAppStore.setState({
-        groups: store.groups.map((g) =>
-          g.id === m.group_id
-            ? { ...g, messages: [...g.messages, {
-                id: m.id, authorId: m.author_id, text: m.text,
-                embed: m.embed, reactions: m.reactions || [],
-                timestamp: new Date(m.created_at).getTime(),
-              }] }
-            : g
-        ),
-      })
-    })
+  // Single channel for all group data changes
+  const dataChannel = supabase
+    .channel('group-data')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => resyncQuiet())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'todos' }, () => resyncQuiet())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, () => resyncQuiet())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, () => resyncQuiet())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'suggestions' }, () => resyncQuiet())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => resyncQuiet())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'places' }, () => resyncQuiet())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'map_pins' }, () => resyncQuiet())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'feed_items' }, () => resyncQuiet())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'group_members' }, () => resyncQuiet())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'live_locations' }, () => resyncQuiet())
     .subscribe()
-  channels.push(msgChannel)
+  channels.push(dataChannel)
 
-  // Notifications
+  // Separate channel for user-specific notifications
   const notifChannel = supabase
-    .channel('notifications')
+    .channel('user-notifications')
     .on('postgres_changes', {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'notifications',
+      event: 'INSERT', schema: 'public', table: 'notifications',
       filter: `user_id=eq.${userId}`,
     }, (payload) => {
       const n = payload.new
@@ -125,60 +121,33 @@ function subscribeToChanges(userId: string, groupIds: string[]) {
     })
     .subscribe()
   channels.push(notifChannel)
+}
 
-  // Group members (detect new members joining)
-  const memberChannel = supabase
-    .channel('group_members')
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'group_members',
-    }, () => {
-      // Refetch all groups on membership changes
-      initSync(userId)
-    })
-    .subscribe()
-  channels.push(memberChannel)
-
-  // Live locations (frequent updates)
-  const liveChannel = supabase
-    .channel('live_locations')
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'live_locations',
-    }, (payload) => {
-      const l = payload.new as Record<string, unknown>
-      if (!l || !groupIds.includes(l.group_id as string)) return
-      const store = useAppStore.getState()
-      useAppStore.setState({
-        groups: store.groups.map((g) =>
-          g.id === l.group_id
-            ? {
-                ...g,
-                liveLocations: [
-                  ...(g.liveLocations || []).filter((loc) => loc.userId !== l.user_id),
-                  {
-                    userId: l.user_id as string, lat: Number(l.lat), lng: Number(l.lng),
-                    label: l.label as string | undefined, sharing: l.sharing as boolean,
-                    updatedAt: new Date(l.updated_at as string).getTime(),
-                  },
-                ],
-              }
-            : g
-        ),
-      })
-    })
-    .subscribe()
-  channels.push(liveChannel)
+// Debounced resync — don't refetch on every single change
+let resyncTimer: ReturnType<typeof setTimeout> | null = null
+function resyncQuiet() {
+  if (resyncTimer) clearTimeout(resyncTimer)
+  resyncTimer = setTimeout(() => {
+    const userId = useAppStore.getState().currentUserId
+    if (!userId || useAppStore.getState().demoMode) return
+    // Fetch fresh data without resetting synced flag
+    fetchUserGroups(userId).then((groups) => {
+      if (groups.length > 0) {
+        useAppStore.setState({ groups })
+      }
+    }).catch(console.error)
+  }, 500) // Wait 500ms to batch rapid changes
 }
 
 /**
- * Cleanup all realtime subscriptions.
+ * Cleanup all subscriptions.
  */
 export function cleanup() {
   channels.forEach((ch) => supabase.removeChannel(ch))
   channels = []
+  synced = false
+  syncing = false
+  if (resyncTimer) clearTimeout(resyncTimer)
 }
 
 /**
