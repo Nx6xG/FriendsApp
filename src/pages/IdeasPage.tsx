@@ -8,7 +8,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { LinkedChips } from '@/components/ui/LinkedChips'
 import { LinkPicker } from '@/components/ui/LinkPicker'
 import { canUseFeature } from '@/lib/plans'
-import { getAuthorId, isMe } from '@/lib/users'
+import { getAuthorId, isMe, getUserName } from '@/lib/users'
 import { ProPrompt } from '@/components/ui/ProGate'
 import type { Group } from '@/types'
 
@@ -144,7 +144,7 @@ export function IdeasPage() {
                         <p className="text-[14px] font-medium leading-snug">{s.text}</p>
                         <div className="flex items-center gap-2 mt-2">
                           <Avatar name={s.authorId} size={18} />
-                          <span className="text-[11px] text-zinc-500">{s.authorId}</span>
+                          <span className="text-[11px] text-zinc-500">{getUserName(s.authorId)}</span>
                         </div>
                         {s.votes.length > 0 && (
                           <div className="flex -space-x-1.5 mt-2">
@@ -192,7 +192,7 @@ export function IdeasPage() {
                     <p className="text-[14px] font-medium">{s.text}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <Avatar name={s.authorId} size={16} />
-                      <span className="text-[11px] text-zinc-600">{s.authorId}</span>
+                      <span className="text-[11px] text-zinc-600">{getUserName(s.authorId)}</span>
                     </div>
                     {s.linkedItems && s.linkedItems.length > 0 && (
                       <div className="mt-1.5">

@@ -258,7 +258,7 @@ export function PlacesPage() {
                           <Avatar name={r.userId} size={24} className="mt-0.5" />
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="text-[12px] font-medium">{r.userId}</span>
+                              <span className="text-[12px] font-medium">{getUserName(r.userId)}</span>
                               <Stars count={r.score} size={10} />
                             </div>
                             {r.comment && <p className="text-[12px] text-zinc-500 mt-0.5">{r.comment}</p>}

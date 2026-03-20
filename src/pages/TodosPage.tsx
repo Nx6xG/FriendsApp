@@ -308,7 +308,7 @@ export function TodosPage() {
     notifyTodoAssigned(t, group.id)
     addFeedItem(group.id, {
       type: 'todo',
-      text: `${currentUser} hat "${t.text}" erstellt → ${assignees.join(', ')}`,
+      text: `${currentUser} hat "${t.text}" erstellt → ${assignees.map(getUserName).join(', ')}`,
       timestamp: Date.now(),
     })
     setText('')
@@ -400,7 +400,7 @@ export function TodosPage() {
                     {prio && <div className={cn('w-1.5 h-1.5 rounded-full shrink-0', prio.dot)} />}
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[11px] text-zinc-600">→ {t.assigneeIds?.join(', ') || t.assigneeIds}</span>
+                    <span className="text-[11px] text-zinc-600">→ {(t.assigneeIds || []).map(getUserName).join(', ')}</span>
                     {t.dueDate && (
                       <span className="text-[10px] text-zinc-600 flex items-center gap-0.5">
                         <Calendar size={9} /> {t.dueDate}

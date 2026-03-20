@@ -270,7 +270,7 @@ export function MapPage() {
             >
               <Popup>
                 <div style={{ color: '#1c1c1e' }}>
-                  <strong>{loc.userId}</strong>
+                  <strong>{getUserName(loc.userId)}</strong>
                   <br />
                   <span style={{ fontSize: 11, color: '#666' }}>
                     {loc.label || 'Unterwegs'} · {timeAgo(loc.updatedAt)}
@@ -351,7 +351,7 @@ export function MapPage() {
                   <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#161822]" />
                 </div>
                 <div className="text-left">
-                  <p className="text-[11px] font-semibold">{loc.userId}</p>
+                  <p className="text-[11px] font-semibold">{getUserName(loc.userId)}</p>
                   <p className="text-[9px] text-zinc-600">{loc.label || 'Unterwegs'} · {timeAgo(loc.updatedAt)}</p>
                 </div>
               </button>

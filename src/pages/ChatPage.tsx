@@ -153,7 +153,7 @@ function LinkEmbed({ message, group }: { message: ChatMessage; group: Group }) {
     case 'todo': {
       const todo = group.todos.find((t) => t.id === linked.id)
       if (!todo) return null
-      name = todo.text; emoji = '✅'; color = '#38bdf8'; sub = `→ ${todo.assigneeIds.join(', ')}`
+      name = todo.text; emoji = '✅'; color = '#38bdf8'; sub = `→ ${todo.assigneeIds.map(getUserName).join(', ')}`
       break
     }
     case 'expense': {
