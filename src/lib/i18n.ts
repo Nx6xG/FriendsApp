@@ -247,9 +247,85 @@ const translations = {
   'new': { de: 'Neu', en: 'New' },
   'add': { de: 'Hinzufügen', en: 'Add' },
   'send': { de: 'Senden', en: 'Send' },
+  'loading': { de: 'Laden', en: 'Load' },
+  'later': { de: 'Später', en: 'Later' },
+  'upgrade': { de: 'Upgrade', en: 'Upgrade' },
+  'manage': { de: 'Verwalten', en: 'Manage' },
+  'join': { de: 'Beitreten', en: 'Join' },
+  'subject': { de: 'Betreff', en: 'Subject' },
+  'emoji_custom': { de: 'Eigenes Emoji eingeben', en: 'Type custom emoji' },
+
+  // ─── Auth (additional) ───
+  'auth.check_email': { de: 'Schau in dein Postfach und klicke den Link um deinen Account zu aktivieren.', en: 'Check your inbox and click the link to activate your account.' },
+  'auth.back_to_login': { de: 'Zum Login →', en: 'Back to login →' },
+
+  // ─── Notifications (text) ───
+  'notif.new_task': { de: 'Neue Aufgabe', en: 'New task' },
+  'notif.task_assigned': { de: 'Aufgabe für dich', en: 'Task for you' },
+  'notif.task_assigned_body': { de: 'wurde dir zugewiesen', en: 'was assigned to you' },
+  'notif.new_expense': { de: 'Neue Ausgabe', en: 'New expense' },
+  'notif.expense_body': { de: 'hat hinzugefügt', en: 'added' },
+  'notif.event_reminder': { de: 'In 1 Stunde', en: 'In 1 hour' },
+
+  // ─── Profile (additional) ───
+  'profile.pending_invites': { de: 'Ausstehende Einladungen', en: 'Pending invitations' },
+  'profile.pro_active': { de: 'Alle Features freigeschaltet', en: 'All features unlocked' },
+  'profile.pro_cancelled': { de: 'Gekündigt — aktiv bis', en: 'Cancelled — active until' },
+  'profile.try_free': { de: '3 Tage kostenlos testen', en: '3-day free trial' },
+  'profile.start_trial': { de: 'Gratis testen', en: 'Start free trial' },
+  'profile.support': { de: 'Support & Feedback', en: 'Support & Feedback' },
+  'profile.support_sub': { de: 'Hilfe, Feedback oder Probleme melden', en: 'Help, feedback or report issues' },
+  'profile.donate': { de: 'Unterstütze uns', en: 'Support us' },
+  'profile.donate_sub': { de: 'Hilf mit, die App weiterzuentwickeln', en: 'Help us keep building the app' },
+  'profile.logout': { de: 'Ausloggen', en: 'Log out' },
+  'profile.logout_sub': { de: 'Von diesem Gerät abmelden', en: 'Sign out from this device' },
+  'profile.demo_confirm': { de: 'Demo-Gruppen werden hinzugefügt. Deine bestehenden Gruppen bleiben erhalten.', en: 'Demo groups will be added. Your existing groups are kept.' },
+  'profile.feedback_thanks': { de: 'Danke für dein Feedback!', en: 'Thanks for your feedback!' },
+  'profile.feedback_follow': { de: 'Wir melden uns so schnell wie möglich.', en: 'We\'ll get back to you as soon as possible.' },
+  'profile.describe': { de: 'Beschreibe dein Anliegen...', en: 'Describe your issue...' },
+
+  // ─── Paywall ───
+  'paywall.you_are_pro': { de: 'Du bist Pro!', en: 'You\'re Pro!' },
+  'paywall.thanks': { de: 'Danke für deinen Support!', en: 'Thanks for your support!' },
+  'paywall.your_features': { de: 'Deine Pro-Features', en: 'Your Pro features' },
+  'paywall.manage_sub': { de: 'Abo verwalten', en: 'Manage subscription' },
+  'paywall.upgrade_title': { de: 'Upgrade auf Pro', en: 'Upgrade to Pro' },
+  'paywall.upgrade_desc': { de: 'Schalte alle Features frei und nutze Friends ohne Limits.', en: 'Unlock all features and use Friends without limits.' },
+  'paywall.monthly': { de: 'Monatlich', en: 'Monthly' },
+  'paywall.yearly': { de: 'Jährlich', en: 'Yearly' },
+  'paywall.per_month': { de: '/Monat', en: '/month' },
+  'paywall.per_year': { de: '/Jahr', en: '/year' },
+  'paywall.days_free': { de: 'Tage gratis', en: 'days free' },
+  'paywall.what_you_get': { de: 'Was du bekommst', en: 'What you get' },
+  'paywall.start_trial': { de: 'Kostenlos testen', en: 'Start free trial' },
+  'paywall.upgrade_now': { de: 'Jetzt upgraden', en: 'Upgrade now' },
+  'paywall.yearly_terms': { de: '3 Tage kostenlos, dann €24,99/Jahr. Jederzeit kündbar.', en: '3-day free trial, then €24.99/year. Cancel anytime.' },
+  'paywall.monthly_terms': { de: 'Jederzeit kündbar. Sichere Zahlung über Lemonsqueezy.', en: 'Cancel anytime. Secure payment via Lemonsqueezy.' },
+  'paywall.feat_groups': { de: 'Unlimitierte Gruppen & Mitglieder', en: 'Unlimited groups & members' },
+  'paywall.feat_gps': { de: 'GPS Live-Standort', en: 'GPS live location' },
+  'paywall.feat_split': { de: 'Individueller Kosten-Split', en: 'Custom expense split' },
+  'paywall.feat_recurring': { de: 'Wiederkehrende Ausgaben & Events', en: 'Recurring expenses & events' },
+  'paywall.feat_calendar': { de: 'Kalender-Export', en: 'Calendar export' },
+  'paywall.feat_bucket': { de: 'Bucket List', en: 'Bucket List' },
+  'paywall.feat_pins': { de: 'Unbegrenzte Karten-Pins', en: 'Unlimited map pins' },
+
+  // ─── Pro Gate ───
+  'pro.gate_message': { de: 'ist ein Pro-Feature. Upgrade um alle Funktionen freizuschalten.', en: 'is a Pro feature. Upgrade to unlock all features.' },
+
+  // ─── Group share ───
+  'gsettings.share_text': { de: 'Tritt unserer Gruppe bei!', en: 'Join our group!' },
   'gsettings.invite': { de: 'Mitglieder einladen', en: 'Invite members' },
   'gsettings.delete_confirm': { de: 'Alle Aufgaben, Ausgaben, Nachrichten und Events werden unwiderruflich gelöscht.', en: 'All tasks, expenses, messages and events will be permanently deleted.' },
   'gsettings.color': { de: 'Farbe:', en: 'Color:' },
+  'gsettings.location_on': { de: 'Dein Standort ist für Mitglieder sichtbar', en: 'Your location is visible to members' },
+  'gsettings.location_off': { de: 'Standort mit dieser Gruppe teilen', en: 'Share location with this group' },
+
+  // ─── New Group ───
+  'newgroup.create': { de: 'Erstellen', en: 'Create' },
+
+  // ─── Linked items ───
+  'linked.task': { de: 'Aufgabe', en: 'Task' },
+  'linked.tasks': { de: 'Aufgaben', en: 'Tasks' },
 
   // ─── Group Settings ───
   'gsettings.group': { de: 'Gruppe', en: 'Group' },

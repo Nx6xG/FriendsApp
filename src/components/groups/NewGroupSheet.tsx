@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { useAppStore } from '@/stores/appStore'
 import { uid } from '@/lib/utils'
 import { isMe } from '@/lib/users'
+import { useT } from '@/lib/i18n'
 import type { Group } from '@/types'
 
 const EMOJIS = ['👥', '🏙️', '🏖️', '🎮', '🍕', '⚽', '🎵', '📸', '🧗', '🎲', '🏠', '💼', '🎓', '🏋️', '🚗', '🍺', '🎭', '🌍', '❤️', '🎪']
@@ -18,6 +19,7 @@ export function NewGroupSheet({ onClose }: Props) {
   const [emoji, setEmoji] = useState(EMOJIS[0])
   const { currentUser, addGroup } = useAppStore()
   const navigate = useNavigate()
+  const t = useT()
 
   const handleCreate = () => {
     if (!name.trim()) return
@@ -73,7 +75,7 @@ export function NewGroupSheet({ onClose }: Props) {
         className="relative w-full bg-[#161822] rounded-t-3xl px-5 pt-6 pb-10 pb-safe"
       >
         <div className="w-10 h-1 rounded-full bg-zinc-700 mx-auto mb-6" />
-        <h3 className="font-bold text-lg mb-5">Neue Gruppe</h3>
+        <h3 className="font-bold text-lg mb-5">{t('newgroup.title')}</h3>
 
         {/* Emoji picker */}
         <div className="flex gap-2 flex-wrap mb-2">
@@ -105,7 +107,7 @@ export function NewGroupSheet({ onClose }: Props) {
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Gruppenname"
+          placeholder={t('newgroup.name_placeholder')}
           autoFocus
           className="w-full px-4 py-3 bg-[#0e1015] border border-white/[0.08] rounded-xl text-white text-sm outline-none focus:border-indigo-500/50 transition-colors placeholder:text-zinc-600 mb-3"
         />
@@ -113,7 +115,7 @@ export function NewGroupSheet({ onClose }: Props) {
         <input
           value={membersStr}
           onChange={(e) => setMembersStr(e.target.value)}
-          placeholder="Mitglieder (Komma getrennt)"
+          placeholder={t('newgroup.members_placeholder')}
           className="w-full px-4 py-3 bg-[#0e1015] border border-white/[0.08] rounded-xl text-white text-sm outline-none focus:border-indigo-500/50 transition-colors placeholder:text-zinc-600 mb-6"
         />
 
@@ -122,7 +124,7 @@ export function NewGroupSheet({ onClose }: Props) {
           disabled={!name.trim()}
           className="w-full py-3.5 bg-indigo-500 text-white rounded-2xl font-bold text-[15px] active:scale-[0.98] transition-all disabled:opacity-30"
         >
-          Erstellen
+          {t('newgroup.create')}
         </button>
       </motion.div>
     </div>

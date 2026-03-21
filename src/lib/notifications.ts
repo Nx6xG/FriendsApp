@@ -1,6 +1,7 @@
 import { Capacitor } from '@capacitor/core'
 import { useAppStore } from '@/stores/appStore'
 import { getUserName, isMe } from '@/lib/users'
+import { getT } from '@/lib/i18n'
 import type { GroupEvent, TodoItem, Expense } from '@/types'
 
 // Convert string ID to numeric ID for LocalNotifications API
@@ -46,7 +47,7 @@ export async function scheduleEventReminder(event: GroupEvent, groupId: string) 
       notifications: [{
         id: hashId(event.id),
         title: `${event.emoji} ${event.title}`,
-        body: `In 1 Stunde — ${event.time} Uhr${event.location ? ` · ${event.location}` : ''}`,
+        body: `${getT('notif.event_reminder')} — ${event.time} ${getT('events.oclock')}${event.location ? ` · ${event.location}` : ''}`.trim(),
         schedule: { at: reminderDate },
         extra: { groupId, eventId: event.id },
       }],
@@ -71,10 +72,10 @@ export async function cancelEventReminder(eventId: string) {
 export async function notifyTodoAssigned(todo: TodoItem, groupId: string) {
   const store = useAppStore.getState()
   if (!todo.assigneeIds.some(isMe)) return
-  await fireNotification('✅ Neue Aufgabe', `"${todo.text}" wurde dir zugewiesen`, groupId)
+  await fireNotification(`✅ ${getT('notif.new_task')}`, `"${todo.text}" ${getT('notif.task_assigned_body')}`, groupId)
   store.addNotification({
     id: `todo-${todo.id}`, type: 'todo',
-    title: 'Aufgabe für dich', body: `"${todo.text}" wurde dir zugewiesen`,
+    title: getT('notif.task_assigned'), body: `"${todo.text}" ${getT('notif.task_assigned_body')}`,
     groupId, read: false, timestamp: Date.now(),
   })
 }
@@ -85,11 +86,11 @@ export async function notifyTodoAssigned(todo: TodoItem, groupId: string) {
 export async function notifyExpenseAdded(expense: Expense, groupId: string) {
   if (!expense.splitBetween.some(isMe) || isMe(expense.paidById)) return
   const paidByName = getUserName(expense.paidById)
-  await fireNotification('💰 Neue Ausgabe', `${paidByName} hat "${expense.title}" hinzugefügt`, groupId)
+  await fireNotification(`💰 ${getT('notif.new_expense')}`, `${paidByName} ${getT('notif.expense_body')} "${expense.title}"`, groupId)
   const store = useAppStore.getState()
   store.addNotification({
     id: `exp-${expense.id}`, type: 'expense',
-    title: 'Neue Ausgabe', body: `${paidByName} hat "${expense.title}" hinzugefügt`,
+    title: getT('notif.new_expense'), body: `${paidByName} ${getT('notif.expense_body')} "${expense.title}"`,
     groupId, read: false, timestamp: Date.now(),
   })
 }
@@ -102,7 +103,7 @@ export async function notifyEventCreated(event: GroupEvent, groupId: string) {
   const store = useAppStore.getState()
   store.addNotification({
     id: `ev-${event.id}`, type: 'event_reminder',
-    title: event.title, body: `${event.date} um ${event.time} Uhr`,
+    title: event.title, body: `${event.date} · ${event.time} ${getT('events.oclock')}`.trim(),
     groupId, read: false, timestamp: Date.now(),
   })
 }

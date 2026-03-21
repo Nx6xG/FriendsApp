@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Zap } from 'lucide-react'
 import { useIsPro } from '@/lib/plans'
-import { useAppStore } from '@/stores/appStore'
+import { useT } from '@/lib/i18n'
 
 /**
  * Wraps a feature that requires Pro. If the user is free, shows a prompt.
@@ -26,7 +26,7 @@ export function ProGate({ feature, children }: { feature: string; children: Reac
 
 export function ProPrompt({ feature, onClose }: { feature: string; onClose: () => void }) {
   const navigate = useNavigate()
-  const lang = useAppStore((s) => s.profile.language)
+  const t = useT()
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-8" onClick={onClose}>
@@ -37,18 +37,16 @@ export function ProPrompt({ feature, onClose }: { feature: string; onClose: () =
         <div className="text-3xl mb-2">⚡</div>
         <p className="text-[16px] font-bold">Friends Pro</p>
         <p className="text-[13px] text-zinc-500 mt-2">
-          {lang === 'de'
-            ? `"${feature}" ist ein Pro-Feature. Upgrade um alle Funktionen freizuschalten.`
-            : `"${feature}" is a Pro feature. Upgrade to unlock all features.`}
+          "{feature}" {t('pro.gate_message')}
         </p>
         <div className="flex gap-2 mt-5">
           <button onClick={onClose}
             className="flex-1 py-2.5 rounded-xl border border-white/[0.08] text-[13px] font-medium text-zinc-400">
-            {lang === 'de' ? 'Später' : 'Later'}
+            {t('later')}
           </button>
           <button onClick={() => { onClose(); navigate('/pro') }}
             className="flex-1 py-2.5 rounded-xl bg-indigo-500 text-white text-[13px] font-bold active:scale-95 flex items-center justify-center gap-1">
-            <Zap size={13} /> Upgrade
+            <Zap size={13} /> {t('upgrade')}
           </button>
         </div>
       </motion.div>

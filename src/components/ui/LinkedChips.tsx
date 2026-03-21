@@ -1,11 +1,12 @@
 import { Link2, Plus, X } from 'lucide-react'
+import { getT } from '@/lib/i18n'
 import type { Group, LinkedItem } from '@/types'
 
 const TYPE_CONFIG: Record<LinkedItem['type'], { emoji: string; color: string; label: string }> = {
   event: { emoji: '📅', color: '#818cf8', label: 'Event' },
   place: { emoji: '📍', color: '#34d399', label: 'Ort' },
   mapPin: { emoji: '🗺️', color: '#fbbf24', label: 'Pin' },
-  todo: { emoji: '✅', color: '#38bdf8', label: 'Aufgabe' },
+  todo: { emoji: '✅', color: '#38bdf8', label: getT('linked.task') },
   expense: { emoji: '💰', color: '#f472b6', label: 'Kosten' },
   suggestion: { emoji: '💡', color: '#a78bfa', label: 'Idee' },
 }

@@ -121,7 +121,7 @@ export function GroupSettingsPage() {
       {/* Group info */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
         className="bg-[#161822] border border-white/[0.06] rounded-2xl p-4 mb-5">
-        <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-3">Gruppe</h4>
+        <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-3">{t('gsettings.group')}</h4>
 
         <div className="flex items-center gap-3 mb-3">
           <button onClick={() => setShowEmojiPicker(!showEmojiPicker)}
@@ -158,7 +158,7 @@ export function GroupSettingsPage() {
                   }
                 }}
               />
-              <span className="text-[11px] text-zinc-600">Eigenes Emoji eingeben</span>
+              <span className="text-[11px] text-zinc-600">{t('emoji_custom')}</span>
             </div>
           </motion.div>
         )}
@@ -172,14 +172,14 @@ export function GroupSettingsPage() {
             const code = group.inviteCode || generateInviteCode(group.id)
             const url = `${window.location.origin}/join/${code}`
             if (navigator.share) {
-              navigator.share({ title: `${group.emoji} ${group.name}`, text: `Tritt unserer Gruppe "${group.name}" bei!`, url })
+              navigator.share({ title: `${group.emoji} ${group.name}`, text: `${t('gsettings.share_text')} "${group.name}"!`, url })
             } else {
               navigator.clipboard.writeText(url)
             }
           }}
             className="w-full py-3.5 bg-indigo-500 text-white rounded-xl font-bold text-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2">
             <Share2 size={16} />
-            Mitglieder einladen
+            {t('gsettings.invite')}
           </button>
         </motion.div>
       )}
@@ -187,8 +187,8 @@ export function GroupSettingsPage() {
       {/* Todo Tags */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
         className="bg-[#161822] border border-white/[0.06] rounded-2xl p-4 mb-5">
-        <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Aufgaben-Tags</h4>
-        <p className="text-[11px] text-zinc-600 mb-3">Tags können Aufgaben zugewiesen werden um sie zu kategorisieren.</p>
+        <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-1">{t('gsettings.tags')}</h4>
+        <p className="text-[11px] text-zinc-600 mb-3">{t('gsettings.tags_sub')}</p>
 
         {/* Existing tags */}
         <div className="flex gap-1.5 flex-wrap mb-3">
@@ -207,7 +207,7 @@ export function GroupSettingsPage() {
                   className="px-2.5 py-1.5 bg-[#161822] border border-white/[0.08] rounded-lg text-white text-[12px] outline-none focus:border-indigo-500/50"
                 />
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-zinc-600 mr-1">Farbe:</span>
+                  <span className="text-[10px] text-zinc-600 mr-1">{t('gsettings.color')}</span>
                   {TAG_COLORS.map((color) => (
                     <button key={color} onClick={() => setEditTagColor(color)}
                       className={cn('w-5 h-5 rounded-full transition-transform', editTagColor === color && 'ring-2 ring-white/30 scale-110')}
@@ -218,11 +218,11 @@ export function GroupSettingsPage() {
                   <button onClick={() => handleUpdateTag(tag.name, editTagName, editTagColor)}
                     disabled={!editTagName.trim()}
                     className="px-2.5 py-1 rounded-lg bg-indigo-500 text-white text-[11px] font-semibold active:scale-95 transition-transform disabled:opacity-30">
-                    Speichern
+                    {t('save')}
                   </button>
                   <button onClick={() => setEditingTag(null)}
                     className="px-2.5 py-1 rounded-lg border border-white/[0.08] text-zinc-400 text-[11px] font-medium">
-                    Abbrechen
+                    {t('cancel')}
                   </button>
                 </div>
               </div>
@@ -244,7 +244,7 @@ export function GroupSettingsPage() {
             )
           )}
           {tags.length === 0 && (
-            <p className="text-[12px] text-zinc-600">Noch keine Tags erstellt</p>
+            <p className="text-[12px] text-zinc-600">{t('gsettings.no_tags')}</p>
           )}
         </div>
 
@@ -254,7 +254,7 @@ export function GroupSettingsPage() {
             <div className="flex gap-2">
               <input value={newTag} onChange={(e) => setNewTag(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
-                placeholder="Neuen Tag erstellen..."
+                placeholder={t('gsettings.new_tag')}
                 className="flex-1 px-3 py-2.5 bg-[#0e1015] border border-white/[0.08] rounded-xl text-white text-sm outline-none focus:border-indigo-500/50 placeholder:text-zinc-600" />
               <button onClick={handleAddTag} disabled={!newTag.trim()}
                 className="px-3 rounded-xl text-white active:scale-95 transition-transform disabled:opacity-30"
@@ -277,7 +277,7 @@ export function GroupSettingsPage() {
       {/* Member Roles */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
         className="bg-[#161822] border border-white/[0.06] rounded-2xl p-4 mb-5">
-        <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-3">Mitglieder & Rollen</h4>
+        <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-3">{t('gsettings.members')}</h4>
 
         <div className="flex flex-col gap-2">
           {memberRoles.map((member) => {
@@ -318,12 +318,12 @@ export function GroupSettingsPage() {
       {/* My Preferences */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
         className="bg-[#161822] border border-white/[0.06] rounded-2xl p-4 mb-5">
-        <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Meine Einstellungen</h4>
-        <p className="text-[11px] text-zinc-600 mb-4">Gilt nur für dich in dieser Gruppe.</p>
+        <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-1">{t('gsettings.my_settings')}</h4>
+        <p className="text-[11px] text-zinc-600 mb-4">{t('gsettings.my_settings_sub')}</p>
 
         {/* Navbar tabs */}
         <div className="mb-4">
-          <label className="text-[11px] font-semibold text-zinc-400 mb-2 block">Navigation (max. 4 Tabs)</label>
+          <label className="text-[11px] font-semibold text-zinc-400 mb-2 block">{t('gsettings.nav_tabs')}</label>
           <div className="flex flex-col gap-1.5">
             {ALL_TABS.map((tab) => {
               const selected = prefs.navTabs.includes(tab.key)
@@ -362,7 +362,7 @@ export function GroupSettingsPage() {
 
         {/* Start tab */}
         <div>
-          <label className="text-[11px] font-semibold text-zinc-400 mb-2 block">Start-Tab beim Öffnen</label>
+          <label className="text-[11px] font-semibold text-zinc-400 mb-2 block">{t('gsettings.start_tab')}</label>
           <div className="flex gap-1.5 flex-wrap">
             {ALL_TABS.map((tab) => (
               <button key={tab.key}
@@ -391,7 +391,7 @@ export function GroupSettingsPage() {
                 {tracking ? t('map.share_on') : t('map.share_off')}
               </p>
               <p className="text-[11px] text-zinc-600">
-                {tracking ? 'Dein Standort ist für Mitglieder sichtbar' : 'Standort mit dieser Gruppe teilen'}
+                {tracking ? t('gsettings.location_on') : t('gsettings.location_off')}
               </p>
             </div>
             <div className={cn(
@@ -411,15 +411,15 @@ export function GroupSettingsPage() {
       {isAdmin && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
           className="bg-[#161822] border border-white/[0.06] rounded-2xl p-4 mb-8">
-          <h4 className="text-[11px] font-bold text-red-400/60 uppercase tracking-widest mb-3">Gefahrenzone</h4>
+          <h4 className="text-[11px] font-bold text-red-400/60 uppercase tracking-widest mb-3">{t('gsettings.danger')}</h4>
           <button onClick={() => setShowDeleteConfirm(true)}
             className="w-full flex items-center gap-3 p-3 bg-red-500/5 border border-red-500/10 rounded-xl text-left active:bg-red-500/10 transition-colors">
             <div className="w-8 h-8 rounded-xl bg-red-500/10 flex items-center justify-center">
               <Trash2 size={14} className="text-red-400" />
             </div>
             <div>
-              <p className="text-[13px] font-medium text-red-400">Gruppe löschen</p>
-              <p className="text-[11px] text-zinc-600">Alle Daten dieser Gruppe werden gelöscht</p>
+              <p className="text-[13px] font-medium text-red-400">{t('gsettings.delete_group')}</p>
+              <p className="text-[11px] text-zinc-600">{t('gsettings.delete_group_sub')}</p>
             </div>
           </button>
         </motion.div>
@@ -432,16 +432,16 @@ export function GroupSettingsPage() {
           <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
             onClick={(e) => e.stopPropagation()}
             className="relative bg-[#1a1d2a] border border-white/[0.08] rounded-2xl p-5 w-full max-w-[320px] text-center">
-            <p className="text-lg font-bold">"{group.name}" löschen?</p>
-            <p className="text-[13px] text-zinc-500 mt-2">Alle Aufgaben, Ausgaben, Nachrichten und Events werden unwiderruflich gelöscht.</p>
+            <p className="text-lg font-bold">"{group.name}" {t('delete')}?</p>
+            <p className="text-[13px] text-zinc-500 mt-2">{t('gsettings.delete_confirm')}</p>
             <div className="flex gap-2 mt-5">
               <button onClick={() => setShowDeleteConfirm(false)}
                 className="flex-1 py-2.5 rounded-xl border border-white/[0.08] text-[13px] font-medium text-zinc-400">
-                Abbrechen
+                {t('cancel')}
               </button>
               <button onClick={handleDeleteGroup}
                 className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-[13px] font-bold active:scale-95">
-                Löschen
+                {t('delete')}
               </button>
             </div>
           </motion.div>

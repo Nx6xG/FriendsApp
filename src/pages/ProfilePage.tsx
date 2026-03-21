@@ -177,7 +177,7 @@ export function ProfilePage() {
                 }}
               />
               <span className="text-[11px] text-zinc-600">
-                {profile.language === 'de' ? 'Eigenes Emoji eingeben' : 'Type custom emoji'}
+                {t('emoji_custom')}
               </span>
             </div>
           </motion.div>
@@ -256,7 +256,7 @@ export function ProfilePage() {
       {(profile.pendingInvites || []).length > 0 && (
         <div className="mx-4 mt-5">
           <h3 className="text-[11px] font-bold text-amber-400/70 uppercase tracking-widest mb-2 px-1">
-            {profile.language === 'de' ? 'Ausstehende Einladungen' : 'Pending invitations'}
+            {t('profile.pending_invites')}
           </h3>
           <div className="bg-[#161822] border border-white/[0.06] rounded-2xl overflow-hidden">
             {(profile.pendingInvites || []).map((inv, i) => (
@@ -265,11 +265,11 @@ export function ProfilePage() {
                 <span className="text-xl">{inv.groupEmoji}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-medium truncate">{inv.groupName}</p>
-                  <p className="text-[11px] text-zinc-600">{inv.members.length} {profile.language === 'de' ? 'Mitglieder' : 'members'}</p>
+                  <p className="text-[11px] text-zinc-600">{inv.members.length} {t('home.members')}</p>
                 </div>
                 <button onClick={() => { navigate(`/join/${groups.find(g => g.id === inv.groupId)?.inviteCode || inv.groupId}`) }}
                   className="px-3 py-1.5 bg-indigo-500 text-white text-[11px] font-bold rounded-lg active:scale-95">
-                  {profile.language === 'de' ? 'Beitreten' : 'Join'}
+                  {t('join')}
                 </button>
                 <button onClick={() => {
                   updateProfile({ pendingInvites: (profile.pendingInvites || []).filter(p => p.groupId !== inv.groupId) })
@@ -293,15 +293,13 @@ export function ProfilePage() {
             <p className="text-[14px] font-bold text-emerald-300">Friends Pro ✓</p>
             <p className="text-[11px] text-zinc-500">
               {profile.planExpiresAt
-                ? (profile.language === 'de'
-                    ? `Gekündigt — läuft bis ${new Date(profile.planExpiresAt).toLocaleDateString('de-AT')}`
-                    : `Cancelled — active until ${new Date(profile.planExpiresAt).toLocaleDateString('en-US')}`)
-                : (profile.language === 'de' ? 'Alle Features freigeschaltet' : 'All features unlocked')}
+                ? `${t('profile.pro_cancelled')} ${new Date(profile.planExpiresAt).toLocaleDateString(profile.language === 'de' ? 'de-AT' : 'en-US')}`
+                : t('profile.pro_active')}
             </p>
           </div>
           <button onClick={() => window.open('https://app.lemonsqueezy.com/my-orders', '_blank')}
             className="text-[11px] text-zinc-500 active:text-zinc-300 px-3 py-2">
-            {profile.language === 'de' ? 'Verwalten' : 'Manage'}
+            {t('manage')}
           </button>
         </div>
       ) : (
@@ -313,11 +311,11 @@ export function ProfilePage() {
           <div className="flex-1">
             <p className="text-[14px] font-bold text-indigo-300">Friends Pro</p>
             <p className="text-[11px] text-zinc-500">
-              {profile.language === 'de' ? '3 Tage kostenlos testen' : '3-day free trial'}
+              {t('profile.try_free')}
             </p>
           </div>
           <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full shrink-0">
-            {profile.language === 'de' ? 'Gratis testen' : 'Try free'}
+            {t('profile.start_trial')}
           </span>
           <ChevronRight size={16} className="text-indigo-400/50" />
         </button>
@@ -380,21 +378,21 @@ export function ProfilePage() {
         <h3 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2 px-1">{t('settings.other')}</h3>
         <div className="bg-[#161822] border border-white/[0.06] rounded-2xl overflow-hidden divide-y divide-white/[0.04]">
           <SettingsRow icon={HelpCircle}
-            label={profile.language === 'de' ? 'Support & Feedback' : 'Support & Feedback'}
-            sub={profile.language === 'de' ? 'Hilfe, Feedback oder Probleme melden' : 'Help, feedback or report issues'}
+            label={t('profile.support')}
+            sub={t('profile.support_sub')}
             onClick={() => { setShowSupport(true); setSupportSent(false); setSupportTitle(''); setSupportBody('') }} />
           <SettingsRow icon={Shield} label={t('settings.privacy')} sub={t('settings.privacy_sub')}
             onClick={() => setShowPrivacy(true)} />
           <SettingsRow icon={Heart}
-            label={profile.language === 'de' ? 'Unterstütze uns' : 'Support us'}
-            sub={profile.language === 'de' ? 'Hilf mit, die App weiterzuentwickeln' : 'Help us keep building the app'}
+            label={t('profile.donate')}
+            sub={t('profile.donate_sub')}
             onClick={() => window.open('https://ko-fi.com/nicogrim', '_blank')} />
           <SettingsRow icon={Info} label={t('settings.about')} sub="Version 1.0.0 — Made with ❤️" />
           <SettingsRow icon={Trash2} label={t('settings.delete_all')} sub={t('settings.delete_all_sub')} danger
             onClick={() => setShowConfirmReset(true)} />
           <SettingsRow icon={LogOut}
-            label={profile.language === 'de' ? 'Ausloggen' : 'Log out'}
-            sub={profile.language === 'de' ? 'Von diesem Gerät abmelden' : 'Sign out from this device'} danger
+            label={t('profile.logout')}
+            sub={t('profile.logout_sub')} danger
             onClick={() => { cleanup(); supabase.auth.signOut(); navigate('/') }} />
         </div>
       </div>
@@ -444,9 +442,7 @@ export function ProfilePage() {
             className="relative bg-[#1a1d2a] border border-white/[0.08] rounded-2xl p-5 w-full max-w-[320px] text-center">
             <p className="text-lg font-bold">{t('settings.load_demo')}</p>
             <p className="text-[13px] text-zinc-500 mt-2">
-              {profile.language === 'de'
-                ? 'Demo-Gruppen werden hinzugefügt. Deine bestehenden Gruppen bleiben erhalten.'
-                : 'Demo groups will be added. Your existing groups will be kept.'}
+              {t('profile.demo_confirm')}
             </p>
             <div className="flex gap-2 mt-5">
               <button onClick={() => setShowConfirmDemo(false)}
@@ -455,7 +451,7 @@ export function ProfilePage() {
               </button>
               <button onClick={() => { loadDemoData(); setShowConfirmDemo(false) }}
                 className="flex-1 py-2.5 rounded-xl bg-indigo-500 text-white text-[13px] font-bold active:scale-95">
-                {profile.language === 'de' ? 'Laden' : 'Load'}
+                {t('loading')}
               </button>
             </div>
           </motion.div>
@@ -474,10 +470,10 @@ export function ProfilePage() {
               <div className="text-center py-4">
                 <span className="text-4xl">✅</span>
                 <p className="text-[15px] font-bold mt-3">
-                  {profile.language === 'de' ? 'Danke für dein Feedback!' : 'Thanks for your feedback!'}
+                  {t('profile.feedback_thanks')}
                 </p>
                 <p className="text-[13px] text-zinc-500 mt-1">
-                  {profile.language === 'de' ? 'Wir melden uns so schnell wie möglich.' : 'We\'ll get back to you as soon as possible.'}
+                  {t('profile.feedback_follow')}
                 </p>
                 <button onClick={() => setShowSupport(false)}
                   className="mt-5 w-full py-2.5 rounded-xl bg-indigo-500 text-white text-[13px] font-bold active:scale-95">
@@ -487,20 +483,20 @@ export function ProfilePage() {
             ) : (
               <>
                 <p className="text-[16px] font-bold mb-4">
-                  {profile.language === 'de' ? 'Support & Feedback' : 'Support & Feedback'}
+                  {t('profile.support')}
                 </p>
 
                 <input
                   value={supportTitle}
                   onChange={(e) => setSupportTitle(e.target.value)}
-                  placeholder={profile.language === 'de' ? 'Betreff' : 'Subject'}
+                  placeholder={t('subject')}
                   className="w-full px-3.5 py-3 bg-[#0e1015] border border-white/[0.08] rounded-xl text-white text-sm outline-none focus:border-indigo-500/50 placeholder:text-zinc-600 mb-3"
                 />
 
                 <textarea
                   value={supportBody}
                   onChange={(e) => setSupportBody(e.target.value)}
-                  placeholder={profile.language === 'de' ? 'Beschreibe dein Anliegen...' : 'Describe your issue...'}
+                  placeholder={t('profile.describe')}
                   rows={4}
                   className="w-full px-3.5 py-3 bg-[#0e1015] border border-white/[0.08] rounded-xl text-white text-sm outline-none focus:border-indigo-500/50 placeholder:text-zinc-600 resize-none mb-4"
                 />
@@ -521,7 +517,7 @@ export function ProfilePage() {
                       setSupportSent(true)
                     }}
                     className="flex-1 py-2.5 rounded-xl bg-indigo-500 text-white text-[13px] font-bold active:scale-95 disabled:opacity-30">
-                    {profile.language === 'de' ? 'Senden' : 'Send'}
+                    {t('send')}
                   </button>
                 </div>
               </>

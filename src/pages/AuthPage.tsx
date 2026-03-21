@@ -82,11 +82,11 @@ export function AuthPage() {
             <span className="text-2xl">📧</span>
             <p className="text-[14px] font-bold text-emerald-400 mt-2">{t('auth.confirm_sent')}</p>
             <p className="text-[12px] text-zinc-400 mt-1">
-              Schau in dein Postfach ({email}) und klicke den Link um deinen Account zu aktivieren.
+              {t('auth.check_email')} ({email})
             </p>
             <button onClick={() => { setConfirmEmail(false); setMode('login') }}
               className="mt-3 text-[12px] text-indigo-400 font-semibold active:text-indigo-300">
-              Zum Login →
+              {t('auth.back_to_login')}
             </button>
           </div>
         )}

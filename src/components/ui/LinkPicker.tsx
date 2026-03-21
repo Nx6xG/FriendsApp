@@ -2,13 +2,14 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Check, X, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { getT } from '@/lib/i18n'
 import type { Group, LinkedItem } from '@/types'
 
 const SECTIONS: { type: LinkedItem['type']; label: string; emoji: string }[] = [
   { type: 'event', label: 'Events', emoji: '📅' },
   { type: 'place', label: 'Orte', emoji: '📍' },
   { type: 'mapPin', label: 'Karten-Pins', emoji: '🗺️' },
-  { type: 'todo', label: 'Aufgaben', emoji: '✅' },
+  { type: 'todo', label: getT('linked.tasks'), emoji: '✅' },
   { type: 'expense', label: 'Kosten', emoji: '💰' },
   { type: 'suggestion', label: 'Ideen', emoji: '💡' },
 ]
