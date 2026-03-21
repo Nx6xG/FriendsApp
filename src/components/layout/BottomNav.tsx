@@ -14,6 +14,9 @@ export function BottomNav({ groupId }: { groupId: string }) {
   const basePath = `/group/${groupId}`
   const [showMore, setShowMore] = useState(false)
   const prefs = useAppStore((s) => s.groupPrefs[groupId] ?? DEFAULT_GROUP_PREFS)
+  const messageCount = useAppStore((s) => s.groups.find((g) => g.id === groupId)?.messages.length || 0)
+  const lastSeen = useAppStore((s) => s.lastSeenChatCount[groupId] || 0)
+  const unreadChat = messageCount - lastSeen
   const t = useT()
 
   const navKeys = prefs.navTabs.length > 0 ? prefs.navTabs : DEFAULT_NAV_KEYS
@@ -76,10 +79,17 @@ export function BottomNav({ groupId }: { groupId: string }) {
             return (
               <button key={tab.key} onClick={() => navigate(basePath + tab.path, { replace: true })}
                 className={cn(
-                  'flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors duration-150',
+                  'flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors duration-150 relative',
                   active ? 'text-indigo-400' : 'text-zinc-600 active:text-zinc-300'
                 )}>
-                <Icon size={18} className="sm:!w-5 sm:!h-5" strokeWidth={active ? 2.2 : 1.5} />
+                <div className="relative">
+                  <Icon size={18} className="sm:!w-5 sm:!h-5" strokeWidth={active ? 2.2 : 1.5} />
+                  {tab.key === 'chat' && unreadChat > 0 && !active && (
+                    <div className="absolute -top-1.5 -right-2.5 min-w-[16px] h-[16px] bg-indigo-500 rounded-full flex items-center justify-center px-1">
+                      <span className="text-[9px] font-bold text-white">{unreadChat > 99 ? '99+' : unreadChat}</span>
+                    </div>
+                  )}
+                </div>
                 <span className={cn('text-[9px] sm:text-[11px]', active ? 'font-bold' : 'font-medium')}>{t(`tab.${tab.key}` as 'tab.feed')}</span>
               </button>
             )

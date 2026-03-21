@@ -4,8 +4,9 @@ import { motion } from 'framer-motion'
 import { useAppStore } from '@/stores/appStore'
 import { Avatar } from '@/components/ui/Avatar'
 import { getUserName } from '@/lib/users'
-import { fetchGroupByInviteCode, dbAddMember } from '@/lib/supabaseData'
+import { fetchGroupByInviteCode, dbAddMember, dbInsertFeedItem } from '@/lib/supabaseData'
 import { resync } from '@/lib/sync'
+import { uid } from '@/lib/utils'
 
 interface GroupPreview {
   id: string
@@ -51,6 +52,12 @@ export function JoinPage() {
       console.error('[Join] Failed:', error)
       return
     }
+    // Add feed item so other members see who joined
+    const name = profile.name || 'User'
+    const text = lang === 'de'
+      ? `${name} ist der Gruppe beigetreten`
+      : `${name} joined the group`
+    dbInsertFeedItem(group.id, uid(), 'system', text)
     setStatus('joined')
     await resync()
     setTimeout(() => navigate(`/group/${group.id}`), 1000)

@@ -36,7 +36,6 @@ export async function fetchUserGroups(userId: string): Promise<Group[]> {
     { data: liveLocations },
     { data: feedItems },
     { data: allMembers },
-    { data: allProfiles },
   ] = await Promise.all([
     supabase.from('groups').select('*').in('id', groupIds),
     supabase.from('todos').select('*').in('group_id', groupIds),
@@ -44,7 +43,7 @@ export async function fetchUserGroups(userId: string): Promise<Group[]> {
     supabase.from('expenses').select('*').in('group_id', groupIds),
     supabase.from('payments').select('*').in('group_id', groupIds),
     supabase.from('suggestions').select('*').in('group_id', groupIds),
-    supabase.from('messages').select('*').in('group_id', groupIds).order('created_at'),
+    supabase.from('messages').select('*').in('group_id', groupIds).order('created_at', { ascending: false }).limit(200),
     supabase.from('events').select('*').in('group_id', groupIds),
     supabase.from('places').select('*').in('group_id', groupIds),
     supabase.from('place_ratings').select('*').in('group_id', groupIds),
@@ -52,8 +51,13 @@ export async function fetchUserGroups(userId: string): Promise<Group[]> {
     supabase.from('live_locations').select('*').in('group_id', groupIds),
     supabase.from('feed_items').select('*').in('group_id', groupIds).order('created_at', { ascending: false }).limit(100),
     supabase.from('group_members').select('*').in('group_id', groupIds),
-    supabase.from('profiles').select('id, name, emoji'),
   ])
+
+  // Fetch only profiles of group members (not all users)
+  const memberUserIds = [...new Set((allMembers || []).map((m) => m.user_id))]
+  const { data: allProfiles } = memberUserIds.length > 0
+    ? await supabase.from('profiles').select('id, name, emoji').in('id', memberUserIds)
+    : { data: [] }
 
   if (!groups) return []
 
@@ -108,7 +112,7 @@ export async function fetchUserGroups(userId: string): Promise<Group[]> {
         done: s.done, mode: s.mode, linkedItems: s.linked_items || [],
         createdAt: new Date(s.created_at).getTime(),
       })),
-      messages: (messages || []).filter((m) => m.group_id === g.id).map((m): ChatMessage => ({
+      messages: (messages || []).filter((m) => m.group_id === g.id).reverse().map((m): ChatMessage => ({
         id: m.id, authorId: m.author_id, text: m.text, embed: m.embed,
         reactions: m.reactions || [], timestamp: new Date(m.created_at).getTime(),
       })),
@@ -158,7 +162,7 @@ export async function fetchProfile(userId: string): Promise<Partial<UserProfile>
 }
 
 export async function fetchNotifications(userId: string) {
-  const { data } = await supabase.from('notifications').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+  const { data } = await supabase.from('notifications').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(50)
   return (data || []).map((n): Notification => ({
     id: n.id, type: n.type, title: n.title, body: n.body,
     groupId: n.group_id, read: n.read, timestamp: new Date(n.created_at).getTime(),

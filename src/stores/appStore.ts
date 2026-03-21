@@ -339,6 +339,14 @@ interface AppState {
   updateGroupPrefs: (groupId: string, prefs: Partial<UserGroupPrefs>) => void
   getGroupPrefs: (groupId: string) => UserGroupPrefs
 
+  // Chat badge
+  lastSeenChatCount: Record<string, number>
+  markChatSeen: (groupId: string) => void
+
+  // Group activity badge
+  lastSeenGroupActivity: Record<string, number>
+  markGroupSeen: (groupId: string) => void
+
   // Profile
   profile: UserProfile
   updateProfile: (updates: Partial<UserProfile>) => void
@@ -666,6 +674,22 @@ export const useAppStore = create<AppState>()(
           const updatedMsg = get().groups.find(g => g.id === groupId)?.messages.find(m => m.id === messageId)
           if (updatedMsg) db.dbUpdateMessage(messageId, { reactions: updatedMsg.reactions }).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
         }
+      },
+
+      // Chat badge
+      lastSeenChatCount: {} as Record<string, number>,
+      markChatSeen: (groupId) => {
+        const count = get().groups.find((g) => g.id === groupId)?.messages.length || 0
+        set((s) => ({ lastSeenChatCount: { ...s.lastSeenChatCount, [groupId]: count } }))
+      },
+
+      // Group activity badge (for home screen)
+      lastSeenGroupActivity: {} as Record<string, number>,
+      markGroupSeen: (groupId) => {
+        const g = get().groups.find((gr) => gr.id === groupId)
+        if (!g) return
+        const total = g.messages.length + g.feed.length + g.todos.length + g.expenses.length + g.suggestions.length + (g.events || []).length
+        set((s) => ({ lastSeenGroupActivity: { ...s.lastSeenGroupActivity, [groupId]: total } }))
       },
 
       // User group prefs

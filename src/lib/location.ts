@@ -103,15 +103,20 @@ export async function stopLocationTracking(groupId: string) {
 
 /**
  * Send location update to all active groups.
+ * Debounced to max once per 30 seconds to reduce DB writes.
  */
+let lastBroadcast = 0
 function broadcastLocation(lat: number, lng: number) {
+  const now = Date.now()
+  if (now - lastBroadcast < 30000) return // Max 1 update per 30 seconds
+  lastBroadcast = now
   const store = useAppStore.getState()
   for (const gid of sharingGroups) {
     store.updateLiveLocation(gid, {
       userId: store.currentUser,
       lat, lng,
       sharing: true,
-      updatedAt: Date.now(),
+      updatedAt: now,
     })
   }
 }

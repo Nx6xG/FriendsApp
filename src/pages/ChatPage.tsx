@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useOutletContext } from 'react-router-dom'
+import { useOutletContext, useNavigate } from 'react-router-dom'
 import { Send, Vote, Calendar, CheckSquare, Plus, X, Check, Link2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '@/stores/appStore'
@@ -125,8 +125,13 @@ function TodoEmbed({ message, groupId }: { message: ChatMessage; groupId: string
   )
 }
 
+const LINK_TAB: Record<string, string> = {
+  event: 'events', place: 'places', mapPin: 'map', todo: 'todos', expense: 'expenses', suggestion: 'ideas',
+}
+
 function LinkEmbed({ message, group }: { message: ChatMessage; group: Group }) {
   const t = useT()
+  const navigate = useNavigate()
   const embed = message.embed!
   const linked = embed.linkedItem
   if (!linked) return null
@@ -175,8 +180,14 @@ function LinkEmbed({ message, group }: { message: ChatMessage; group: Group }) {
     }
   }
 
+  const handleNav = () => {
+    if (!linked) return
+    const tab = LINK_TAB[linked.type]
+    if (tab) navigate(`/group/${group.id}/${tab}`)
+  }
+
   return (
-    <div className="mt-2 rounded-xl p-3 border" style={{ backgroundColor: `${color}08`, borderColor: `${color}20` }}>
+    <button onClick={handleNav} className="mt-2 rounded-xl p-3 border w-full text-left active:opacity-70 transition-opacity" style={{ backgroundColor: `${color}08`, borderColor: `${color}20` }}>
       <div className="flex items-center gap-1.5 mb-1.5">
         <Link2 size={11} style={{ color }} />
         <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color }}>{t('chat.linked')}</span>
@@ -188,7 +199,7 @@ function LinkEmbed({ message, group }: { message: ChatMessage; group: Group }) {
           {sub && <p className="text-[11px] text-zinc-500 truncate">{sub}</p>}
         </div>
       </div>
-    </div>
+    </button>
   )
 }
 
@@ -320,7 +331,7 @@ function EmbedCreator({ group, mode, onClose, onSend }: {
 
 export function ChatPage() {
   const { group } = useOutletContext<{ group: Group }>()
-  const { currentUser, addMessage, addFeedItem, toggleChatReaction } = useAppStore()
+  const { currentUser, addMessage, addFeedItem, toggleChatReaction, markChatSeen, addEvent, addTodo } = useAppStore()
   const t = useT()
   const [text, setText] = useState('')
   const [creatorMode, setCreatorMode] = useState<CreatorMode>(null)
@@ -328,10 +339,11 @@ export function ChatPage() {
   const [reactingTo, setReactingTo] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
-  // Scroll to bottom on new messages and when keyboard opens (layout resize)
+  // Mark chat as seen + scroll to bottom on new messages
   useEffect(() => {
+    markChatSeen(group.id)
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [group.messages.length])
+  }, [group.messages.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const root = document.getElementById('root')
@@ -360,6 +372,23 @@ export function ChatPage() {
       type: 'chat', text: `${currentUser} hat ${labels[embed.type] || 'etwas'} im Chat geteilt`,
       timestamp: Date.now(),
     })
+    // Also create the actual entity so it shows up in the respective tab
+    if (embed.type === 'event_invite' && embed.eventTitle && embed.eventDate && embed.eventTime) {
+      addEvent(group.id, {
+        id: uid(), title: embed.eventTitle, emoji: '📅',
+        date: embed.eventDate, time: embed.eventTime,
+        attendees: embed.eventAttendees || [], recurrence: 'none',
+        createdBy: getAuthorId(), createdAt: Date.now(),
+      })
+    }
+    if (embed.type === 'todo_assign' && embed.todoText) {
+      addTodo(group.id, {
+        id: uid(), text: embed.todoText,
+        assigneeIds: embed.todoAssignee ? [embed.todoAssignee] : [],
+        tags: [], priority: 'medium', done: false,
+        createdAt: Date.now(),
+      })
+    }
   }
 
   const renderEmbed = (msg: ChatMessage) => {
@@ -475,13 +504,22 @@ export function ChatPage() {
           </button>
         </div>
         {/* Text input */}
-        <div className="flex gap-2 p-3 pb-safe">
-          <input value={text} onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+        <div className="flex gap-2 p-3 pb-safe items-end">
+          <textarea value={text} onChange={(e) => {
+              setText(e.target.value)
+              // Auto-resize
+              const el = e.target
+              el.style.height = 'auto'
+              el.style.height = Math.min(el.scrollHeight, 120) + 'px'
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
+            }}
+            rows={1}
             placeholder={`${t('chat.placeholder')}...`}
-            className="flex-1 px-4 py-3 bg-[#161822] border border-white/[0.08] rounded-2xl text-white text-sm outline-none focus:border-indigo-500/50 transition-colors placeholder:text-zinc-600" />
+            className="flex-1 px-4 py-3 bg-[#161822] border border-white/[0.08] rounded-2xl text-white text-sm outline-none focus:border-indigo-500/50 transition-colors placeholder:text-zinc-600 resize-none overflow-hidden" />
           <button onClick={handleSend} disabled={!text.trim()}
-            className="px-4 bg-indigo-500 text-white rounded-2xl active:scale-95 transition-all disabled:opacity-30">
+            className="px-4 py-3 bg-indigo-500 text-white rounded-2xl active:scale-95 transition-all disabled:opacity-30 shrink-0">
             <Send size={16} />
           </button>
         </div>

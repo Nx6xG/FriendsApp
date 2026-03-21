@@ -10,7 +10,7 @@ import { canCreateGroup } from '@/lib/plans'
 import { useT } from '@/lib/i18n'
 
 export function HomePage() {
-  const { currentUser, groups, notifications, profile, demoMode, setDemoMode } = useAppStore()
+  const { currentUser, groups, notifications, profile, demoMode, setDemoMode, lastSeenGroupActivity } = useAppStore()
   const navigate = useNavigate()
   const t = useT()
   const [showNew, setShowNew] = useState(false)
@@ -76,6 +76,9 @@ export function HomePage() {
           const nextEvent = (g.events || [])
             .filter((e) => new Date(e.date) >= new Date(new Date().toDateString()))
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0]
+          const totalActivity = g.messages.length + g.feed.length + g.todos.length + g.expenses.length + g.suggestions.length + (g.events || []).length
+          const lastSeen = lastSeenGroupActivity[g.id] || 0
+          const hasNew = totalActivity > lastSeen
 
           return (
             <button
@@ -83,7 +86,12 @@ export function HomePage() {
               onClick={() => navigate(`/group/${g.id}`)}
               className="flex items-center gap-3.5 bg-[#161822] border border-white/[0.06] rounded-2xl p-4 w-full text-left active:scale-[0.98] transition-transform"
             >
-              <span className="text-3xl">{g.emoji}</span>
+              <div className="relative">
+                <span className="text-3xl">{g.emoji}</span>
+                {hasNew && (
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-indigo-500 rounded-full border-2 border-[#161822]" />
+                )}
+              </div>
               <div className="flex-1 min-w-0">
                 <div className="font-bold text-[15px] truncate">{g.name}</div>
                 <div className="text-[11px] text-zinc-500 mt-0.5">

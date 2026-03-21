@@ -20,6 +20,13 @@ export async function initSync(userId: string) {
   try {
     log('[Sync] Starting for user:', userId)
 
+    // Trigger server-side cleanup (max once per 24h, async)
+    const lastCleanup = Number(localStorage.getItem('lastCleanup') || '0')
+    if (Date.now() - lastCleanup > 86400000) {
+      localStorage.setItem('lastCleanup', String(Date.now()))
+      supabase.rpc('cleanup_old_data').then(() => { log('[Sync] Cleanup done') })
+    }
+
     const [groups, profile, notifications, groupPrefs] = await Promise.all([
       fetchUserGroups(userId),
       fetchProfile(userId),

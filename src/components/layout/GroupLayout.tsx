@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Outlet, useParams, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useAppStore } from '@/stores/appStore'
 import { DEFAULT_GROUP_PREFS } from '@/lib/tabs'
@@ -13,9 +13,12 @@ export function GroupLayout() {
   const location = useLocation()
   const navigate = useNavigate()
 
-  // Redirect to start tab on initial group entry
+  const markGroupSeen = useAppStore((s) => s.markGroupSeen)
+
+  // Mark group as seen + redirect to start tab on initial group entry
   useEffect(() => {
     if (!groupId || !group) return
+    markGroupSeen(groupId)
     const basePath = `/group/${groupId}`
     const isExactBase = location.pathname === basePath || location.pathname === basePath + '/'
     if (isExactBase) {
@@ -26,6 +29,19 @@ export function GroupLayout() {
     }
   }, [groupId]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Hide bottom nav when keyboard is open (mobile)
+  const [keyboardOpen, setKeyboardOpen] = useState(false)
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    const onResize = () => {
+      // If viewport height is significantly less than window height, keyboard is open
+      setKeyboardOpen(vv.height < window.innerHeight * 0.75)
+    }
+    vv.addEventListener('resize', onResize)
+    return () => vv.removeEventListener('resize', onResize)
+  }, [])
+
   if (!group) return <Navigate to="/" replace />
 
   return (
@@ -35,7 +51,7 @@ export function GroupLayout() {
       <main className="flex-1 min-h-0 overflow-y-auto">
         <Outlet context={{ group }} />
       </main>
-      <BottomNav groupId={group.id} />
+      {!keyboardOpen && <BottomNav groupId={group.id} />}
     </div>
   )
 }
