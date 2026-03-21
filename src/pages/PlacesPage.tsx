@@ -325,7 +325,7 @@ export function PlacesPage() {
       </div>
 
       {places.length === 0 && (
-        <p className="text-zinc-600 text-sm text-center py-12">{t('places.empty')} 📍</p>
+        <p className="text-zinc-600 text-sm text-center py-12">{t('places.empty')}</p>
       )}
     </div>
   )

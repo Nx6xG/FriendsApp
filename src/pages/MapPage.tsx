@@ -197,7 +197,7 @@ export function MapPage() {
       </div>
 
       {/* Leaflet Map */}
-      <div className="rounded-2xl overflow-hidden border border-white/[0.06] mb-4" style={{ height: 320 }}>
+      <div className="rounded-2xl overflow-hidden border border-white/[0.06] mb-4 relative z-0" style={{ height: 320 }}>
         <MapContainer
           center={defaultCenter}
           zoom={pins.length > 0 ? 5 : 3}

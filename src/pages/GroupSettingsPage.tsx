@@ -409,6 +409,29 @@ export function GroupSettingsPage() {
             </div>
           </button>
         </div>
+
+        {/* Birthday visibility */}
+        <div className="mt-4">
+          <button onClick={() => {
+              const current = prefs.showBirthdays !== false
+              updateGroupPrefs(group.id, { showBirthdays: !current })
+            }}
+            className={cn(
+              'w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-colors',
+              prefs.showBirthdays !== false ? 'bg-indigo-500/10 border border-indigo-500/20' : 'bg-[#0e1015] border border-white/[0.06]'
+            )}>
+            <span className="text-base">🎂</span>
+            <div className="flex-1 text-left">
+              <p className={cn('text-[13px] font-medium', prefs.showBirthdays !== false ? 'text-indigo-300' : 'text-zinc-400')}>
+                {t('gsettings.show_birthdays')}
+              </p>
+              <p className="text-[11px] text-zinc-600">{t('gsettings.show_birthdays_sub')}</p>
+            </div>
+            <div className={cn('w-10 h-6 rounded-full transition-colors relative', prefs.showBirthdays !== false ? 'bg-indigo-500' : 'bg-zinc-700')}>
+              <div className={cn('w-5 h-5 rounded-full bg-white absolute top-0.5 transition-all', prefs.showBirthdays !== false ? 'left-[18px]' : 'left-0.5')} />
+            </div>
+          </button>
+        </div>
       </motion.div>
 
       {/* Danger zone */}

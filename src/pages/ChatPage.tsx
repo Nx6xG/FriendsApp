@@ -17,6 +17,7 @@ const REACTIONS = ['❤️', '😂', '👍', '😮', '😢', '🔥']
 
 function PollEmbed({ message, groupId }: { message: ChatMessage; groupId: string }) {
   const { voteChatPoll } = useAppStore()
+  const navigate = useNavigate()
   const t = useT()
   const embed = message.embed!
   const options = embed.pollOptions || []
@@ -24,10 +25,10 @@ function PollEmbed({ message, groupId }: { message: ChatMessage; groupId: string
 
   return (
     <div className="mt-2 bg-[#0e1015]/60 rounded-xl p-3 border border-violet-500/15">
-      <div className="flex items-center gap-1.5 mb-2">
+      <button onClick={() => navigate(`/group/${groupId}/ideas`)} className="flex items-center gap-1.5 mb-2 active:opacity-70">
         <Vote size={12} className="text-violet-400" />
         <span className="text-[10px] font-bold text-violet-400 uppercase tracking-wider">{t('chat.poll')}</span>
-      </div>
+      </button>
       <p className="text-[12px] font-semibold mb-2.5">{embed.pollQuestion}</p>
       <div className="space-y-1.5">
         {options.map((opt) => {
@@ -64,16 +65,17 @@ function PollEmbed({ message, groupId }: { message: ChatMessage; groupId: string
 
 function EventEmbed({ message, groupId }: { message: ChatMessage; groupId: string }) {
   const { rsvpChatEvent } = useAppStore()
+  const navigate = useNavigate()
   const t = useT()
   const embed = message.embed!
   const going = embed.eventAttendees?.some(isMe) || false
 
   return (
     <div className="mt-2 bg-[#0e1015]/60 rounded-xl p-3 border border-indigo-500/15">
-      <div className="flex items-center gap-1.5 mb-2">
+      <button onClick={() => navigate(`/group/${groupId}/events`)} className="flex items-center gap-1.5 mb-2 active:opacity-70">
         <Calendar size={12} className="text-indigo-400" />
         <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">{t('chat.event_invite')}</span>
-      </div>
+      </button>
       <p className="text-[13px] font-semibold">{embed.eventTitle}</p>
       <p className="text-[11px] text-zinc-500 mt-1">
         📅 {embed.eventDate} · 🕐 {embed.eventTime}
@@ -98,29 +100,30 @@ function EventEmbed({ message, groupId }: { message: ChatMessage; groupId: strin
 
 function TodoEmbed({ message, groupId }: { message: ChatMessage; groupId: string }) {
   const { toggleChatTodo } = useAppStore()
+  const navigate = useNavigate()
   const t = useT()
   const embed = message.embed!
   const done = embed.todoDone || false
 
   return (
     <div className="mt-2 bg-[#0e1015]/60 rounded-xl p-3 border border-cyan-500/15">
-      <div className="flex items-center gap-1.5 mb-2">
+      <button onClick={() => navigate(`/group/${groupId}/todos`)} className="flex items-center gap-1.5 mb-2 active:opacity-70">
         <CheckSquare size={12} className="text-cyan-400" />
         <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">{t('chat.task')}</span>
-      </div>
-      <button onClick={() => toggleChatTodo(groupId, message.id)}
-        className="w-full flex items-center gap-2.5 text-left">
-        <div className={cn(
-          'w-5 h-5 rounded-md border-2 shrink-0 flex items-center justify-center transition-colors',
-          done ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-600'
-        )}>
+      </button>
+      <div className="flex items-center gap-2.5">
+        <button onClick={() => toggleChatTodo(groupId, message.id)}
+          className={cn(
+            'w-5 h-5 rounded-md border-2 shrink-0 flex items-center justify-center transition-colors',
+            done ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-600'
+          )}>
           {done && <Check size={11} strokeWidth={3} className="text-white" />}
-        </div>
-        <div>
+        </button>
+        <button onClick={() => navigate(`/group/${groupId}/todos`)} className="flex-1 text-left active:opacity-70">
           <p className={cn('text-[12px] font-medium', done && 'line-through text-zinc-500')}>{embed.todoText}</p>
           <p className="text-[10px] text-zinc-600 mt-0.5">→ {embed.todoAssignee}</p>
-        </div>
-      </button>
+        </button>
+      </div>
     </div>
   )
 }

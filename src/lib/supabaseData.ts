@@ -56,7 +56,7 @@ export async function fetchUserGroups(userId: string): Promise<Group[]> {
   // Fetch only profiles of group members (not all users)
   const memberUserIds = [...new Set((allMembers || []).map((m) => m.user_id))]
   const { data: allProfiles } = memberUserIds.length > 0
-    ? await supabase.from('profiles').select('id, name, emoji').in('id', memberUserIds)
+    ? await supabase.from('profiles').select('id, name, emoji, birthday').in('id', memberUserIds)
     : { data: [] }
 
   if (!groups) return []
@@ -141,6 +141,12 @@ export async function fetchUserGroups(userId: string): Promise<Group[]> {
         userId: l.user_id, lat: Number(l.lat), lng: Number(l.lng), label: l.label,
         sharing: l.sharing, updatedAt: new Date(l.updated_at).getTime(),
       })),
+      memberBirthdays: gMembers
+        .map((m) => {
+          const p = (allProfiles || []).find((pr) => pr.id === m.user_id)
+          return p?.birthday ? { name: p.name, birthday: p.birthday } : null
+        })
+        .filter(Boolean) as { name: string; birthday: string }[],
       createdBy: g.created_by,
       createdAt: new Date(g.created_at).getTime(),
     }
@@ -157,6 +163,7 @@ export async function fetchProfile(userId: string): Promise<Partial<UserProfile>
     notificationsEnabled: data.notifications_enabled,
     plan: data.plan || 'free',
     planExpiresAt: data.plan_expires_at ? new Date(data.plan_expires_at).getTime() : undefined,
+    birthday: data.birthday || undefined,
     referralCode: data.referral_code,
   }
 }
@@ -432,6 +439,7 @@ export const dbUpdateProfile = (userId: string, updates: Partial<UserProfile>) =
   if (updates.notificationsEnabled !== undefined) m.notifications_enabled = updates.notificationsEnabled
   if (updates.plan !== undefined) m.plan = updates.plan
   if (updates.planExpiresAt !== undefined) m.plan_expires_at = updates.planExpiresAt ? new Date(updates.planExpiresAt).toISOString() : null
+  if (updates.birthday !== undefined) m.birthday = updates.birthday || null
   return supabase.from('profiles').update(m).eq('id', userId)
 }
 

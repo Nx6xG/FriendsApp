@@ -90,7 +90,30 @@ export function EventsPage() {
   const [showProPrompt, setShowProPrompt] = useState<string | null>(null)
   const [recurrence, setRecurrence] = useState<'none' | 'weekly' | 'biweekly' | 'monthly'>('none')
 
-  const events = [...(group.events || [])].sort(
+  const groupPrefs = useAppStore((s) => s.groupPrefs[group.id])
+  const showBirthdays = groupPrefs?.showBirthdays !== false
+
+  // Generate birthday events for the current year
+  const birthdayEvents: GroupEvent[] = showBirthdays
+    ? (group.memberBirthdays || []).map((b) => {
+        const [dd, mm] = b.birthday.split('.')
+        if (!dd || !mm) return null
+        const year = new Date().getFullYear()
+        const dateStr = `${year}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`
+        return {
+          id: `bday-${b.name}-${year}`,
+          title: `🎂 ${b.name}`,
+          emoji: '🎂',
+          date: dateStr,
+          time: '00:00',
+          attendees: [],
+          createdBy: '',
+          createdAt: 0,
+        } as GroupEvent
+      }).filter(Boolean) as GroupEvent[]
+    : []
+
+  const events = [...(group.events || []), ...birthdayEvents].sort(
     (a, b) => new Date(a.date + 'T' + a.time).getTime() - new Date(b.date + 'T' + b.time).getTime()
   )
 
@@ -352,7 +375,7 @@ export function EventsPage() {
           )}
 
           {events.length === 0 && (
-            <p className="text-zinc-600 text-sm text-center py-12">{t('events.empty')} 📅</p>
+            <p className="text-zinc-600 text-sm text-center py-12">{t('events.empty')}</p>
           )}
         </>
       ) : (

@@ -146,6 +146,26 @@ export function ProfilePage() {
               className="block text-[12px] text-zinc-500 mt-1.5 active:text-zinc-300">
               {profile.status || t('profile.set_status')}
             </button>
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <span className="text-[11px]">🎂</span>
+              <input
+                type="date"
+                value={(() => {
+                  const parts = (profile.birthday || '').split('.')
+                  return parts.length === 3 ? `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}` : ''
+                })()}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    const [y, m, d] = e.target.value.split('-')
+                    updateProfile({ birthday: `${d}.${m}.${y}` })
+                  } else {
+                    updateProfile({ birthday: undefined })
+                  }
+                }}
+                className="bg-transparent text-[11px] text-indigo-400 outline-none appearance-none [-webkit-appearance:none]"
+                style={{ colorScheme: 'dark' }}
+              />
+            </div>
           </div>
         </div>
 

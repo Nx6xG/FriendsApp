@@ -293,16 +293,17 @@ export function TodosPage() {
   const { currentUser, addTodo, toggleTodo, addFeedItem } = useAppStore()
   const tr = useT()
   const [text, setText] = useState('')
-  const [assignee, setAssignee] = useState('')
+  const [assignees, setAssignees] = useState<string[]>([])
+  const [showAssignees, setShowAssignees] = useState(false)
   const [selectedTodo, setSelectedTodo] = useState<TodoItem | null>(null)
 
   const handleAdd = () => {
     if (!text.trim()) return
-    const assignees = assignee ? [assignee] : [currentUser]
+    const finalAssignees = assignees.length > 0 ? assignees : [getAuthorId()]
     const t: TodoItem = {
       id: uid(),
       text: text.trim(),
-      assigneeIds: assignees,
+      assigneeIds: finalAssignees,
       priority: 'medium',
       done: false,
       createdAt: Date.now(),
@@ -311,11 +312,12 @@ export function TodosPage() {
     notifyTodoAssigned(t, group.id)
     addFeedItem(group.id, {
       type: 'todo',
-      text: `${currentUser} hat "${t.text}" erstellt → ${assignees.map(getUserName).join(', ')}`,
+      text: `${currentUser} hat "${t.text}" erstellt → ${finalAssignees.map(getUserName).join(', ')}`,
       timestamp: Date.now(),
     })
     setText('')
-    setAssignee('')
+    setAssignees([])
+    setShowAssignees(false)
     hapticLight()
   }
 
@@ -341,30 +343,47 @@ export function TodosPage() {
   return (
     <div className="p-4">
       {/* Add form */}
-      <div className="flex gap-2 mb-6">
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-          placeholder={tr('todos.new')}
-          className="flex-1 min-w-0 px-3.5 py-3 bg-[#161822] border border-white/[0.08] rounded-xl text-white text-sm outline-none focus:border-indigo-500/50 transition-colors placeholder:text-zinc-600"
-        />
-        <select
-          value={assignee}
-          onChange={(e) => setAssignee(e.target.value)}
-          className="w-24 px-2 py-3 bg-[#161822] border border-white/[0.08] rounded-xl text-zinc-400 text-xs outline-none"
-        >
-          <option value="">{tr('todos.who')}</option>
-          {group.members.map((m) => (
-            <option key={m} value={m}>{getUserName(m)}</option>
-          ))}
-        </select>
-        <button
-          onClick={handleAdd}
-          className="px-3.5 bg-indigo-500 text-white rounded-xl active:scale-95 transition-transform"
-        >
-          <Plus size={18} />
-        </button>
+      <div className="mb-6">
+        <div className="flex gap-2">
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+            placeholder={tr('todos.new')}
+            className="flex-1 min-w-0 px-3.5 py-3 bg-[#161822] border border-white/[0.08] rounded-xl text-white text-sm outline-none focus:border-indigo-500/50 transition-colors placeholder:text-zinc-600"
+          />
+          <button
+            onClick={() => setShowAssignees(!showAssignees)}
+            className={cn('px-3 py-3 rounded-xl text-xs font-medium transition-colors border',
+              assignees.length > 0 ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/20' : 'bg-[#161822] text-zinc-400 border-white/[0.08]'
+            )}
+          >
+            {assignees.length > 0 ? assignees.length : tr('todos.who')}
+          </button>
+          <button
+            onClick={handleAdd}
+            className="px-3.5 bg-indigo-500 text-white rounded-xl active:scale-95 transition-transform"
+          >
+            <Plus size={18} />
+          </button>
+        </div>
+        {showAssignees && (
+          <div className="flex gap-1.5 flex-wrap mt-2">
+            {group.members.map((m) => {
+              const selected = assignees.includes(m)
+              return (
+                <button key={m} onClick={() => setAssignees(selected ? assignees.filter((a) => a !== m) : [...assignees, m])}
+                  className={cn('flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors',
+                    selected ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/20' : 'bg-[#0e1015] text-zinc-500 border border-white/[0.06]'
+                  )}>
+                  <Avatar name={m} size={16} />
+                  {getUserName(m)}
+                  {selected && <Check size={10} />}
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Open */}

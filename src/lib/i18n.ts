@@ -207,11 +207,11 @@ const translations = {
   'map.longitude': { de: 'Längengrad', en: 'Longitude' },
   'map.set_pin': { de: 'Pin setzen', en: 'Set pin' },
   'map.empty': { de: 'Noch keine Pins — füge euren ersten Ort hinzu!', en: 'No pins yet — add your first place!' },
-  'map.visited': { de: '✅ Besucht', en: '✅ Visited' },
-  'map.wishlist': { de: '✨ Wunschliste', en: '✨ Wishlist' },
+  'map.visited': { de: 'Besucht', en: 'Visited' },
+  'map.wishlist': { de: 'Wunschliste', en: 'Wishlist' },
   'map.filter_all': { de: 'Alle', en: 'All' },
-  'map.filter_visited': { de: '✅ Besucht', en: '✅ Visited' },
-  'map.filter_wish': { de: '✨ Wunsch', en: '✨ Wish' },
+  'map.filter_visited': { de: 'Besucht', en: 'Visited' },
+  'map.filter_wish': { de: 'Wunsch', en: 'Wish' },
 
   // ─── Stats ───
   'stats.overview': { de: 'Übersicht', en: 'Overview' },
@@ -409,6 +409,13 @@ const translations = {
   'referral.welcome': { de: 'hat dich eingeladen', en: 'invited you' },
   'referral.signup_cta': { de: 'Jetzt registrieren', en: 'Sign up now' },
   'referral.invalid': { de: 'Ungültiger Einladungslink', en: 'Invalid referral link' },
+
+  // ─── Birthday ───
+  'profile.birthday': { de: 'Geburtstag', en: 'Birthday' },
+  'profile.birthday_placeholder': { de: 'TT.MM.', en: 'DD.MM.' },
+  'profile.birthday_set': { de: 'Geburtstag setzen', en: 'Set birthday' },
+  'gsettings.show_birthdays': { de: 'Geburtstage anzeigen', en: 'Show birthdays' },
+  'gsettings.show_birthdays_sub': { de: 'Geburtstage der Mitglieder im Kalender anzeigen', en: 'Show member birthdays in calendar' },
 
   // ─── Error ───
   'error.title': { de: 'Etwas ist schiefgelaufen', en: 'Something went wrong' },

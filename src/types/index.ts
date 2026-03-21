@@ -129,6 +129,7 @@ export interface UserProfile {
   hiddenGroups?: string[]
   plan?: PlanType
   planExpiresAt?: number
+  birthday?: string  // MM-DD format
   referralCode?: string
   pendingInvites?: PendingInvite[]
 }
@@ -198,6 +199,7 @@ export interface GroupSettings {
 export interface UserGroupPrefs {
   navTabs: string[]    // tab keys for the bottom nav (max 4)
   startTab: string     // tab path to open on group entry (e.g. '' for feed, '/chat', etc.)
+  showBirthdays?: boolean  // show member birthdays in events calendar (default true)
 }
 
 export interface Group {
@@ -219,6 +221,7 @@ export interface Group {
   // V3
   mapPins?: MapPin[]
   liveLocations?: LiveLocation[]
+  memberBirthdays?: { name: string; birthday: string }[]  // name + MM-DD
   createdBy?: string
   createdAt: number
 }

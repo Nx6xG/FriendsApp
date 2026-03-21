@@ -9,7 +9,7 @@ import { LinkedChips } from '@/components/ui/LinkedChips'
 import { notifyExpenseAdded } from '@/lib/notifications'
 import { LinkPicker } from '@/components/ui/LinkPicker'
 import { hapticLight } from '@/lib/haptics'
-import { getUserName } from '@/lib/users'
+import { getUserName, isMe } from '@/lib/users'
 import { ProPrompt } from '@/components/ui/ProGate'
 import { canUseFeature } from '@/lib/plans'
 import { useT } from '@/lib/i18n'
@@ -200,33 +200,38 @@ export function ExpensesPage() {
             {t('expenses.open_debts')}
           </h4>
           <div className="flex flex-col gap-2">
-            {transfers.map((tr, i) => (
-              <motion.div
-                key={`${tr.from}-${tr.to}`}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="flex items-center gap-2 p-3 bg-[#161822] border border-white/[0.06] rounded-xl"
-              >
-                <Avatar name={tr.from} size={26} />
-                <span className="text-xs font-medium text-zinc-400 flex-1 truncate">
-                  {getUserName(tr.from)}
-                </span>
-                <ArrowRight size={12} className="text-zinc-600 shrink-0" />
-                <span className="text-xs font-medium text-zinc-400 flex-1 truncate text-right">
-                  {getUserName(tr.to)}
-                </span>
-                <Avatar name={tr.to} size={26} />
-                <span className="text-sm font-bold text-amber-400 tabular-nums ml-1">
-                  {currency(tr.amount)}
-                </span>
-                <button onClick={() => handleMarkPaid(tr.from, tr.to, tr.amount)}
-                  className="ml-1 p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-400 active:scale-95 transition-transform shrink-0"
-                  title={t('expenses.mark_paid')}>
-                  <Check size={12} />
-                </button>
-              </motion.div>
-            ))}
+            {transfers.map((tr, i) => {
+              const isMine = isMe(tr.from) || isMe(tr.to)
+              return (
+                <motion.div
+                  key={`${tr.from}-${tr.to}`}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className={cn('flex items-center gap-2 p-3 bg-[#161822] border border-white/[0.06] rounded-xl', !isMine && 'opacity-40')}
+                >
+                  <Avatar name={tr.from} size={26} />
+                  <span className="text-xs font-medium text-zinc-400 flex-1 truncate">
+                    {getUserName(tr.from)}
+                  </span>
+                  <ArrowRight size={12} className="text-zinc-600 shrink-0" />
+                  <span className="text-xs font-medium text-zinc-400 flex-1 truncate text-right">
+                    {getUserName(tr.to)}
+                  </span>
+                  <Avatar name={tr.to} size={26} />
+                  <span className="text-sm font-bold text-amber-400 tabular-nums ml-1">
+                    {currency(tr.amount)}
+                  </span>
+                  {isMine && (
+                    <button onClick={() => handleMarkPaid(tr.from, tr.to, tr.amount)}
+                      className="ml-1 p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-400 active:scale-95 transition-transform shrink-0"
+                      title={t('expenses.mark_paid')}>
+                      <Check size={12} />
+                    </button>
+                  )}
+                </motion.div>
+              )
+            })}
           </div>
         </div>
       )}
