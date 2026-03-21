@@ -32,7 +32,7 @@ export function GroupLayout() {
     <div className="flex flex-col h-full">
       <GroupHeader group={group} />
       <DemoBanner />
-      <main className="flex-1 min-h-0 overflow-y-auto">
+      <main className="flex-1 min-h-0 overflow-y-auto pb-[83px]">
         <Outlet context={{ group }} />
       </main>
       <BottomNav groupId={group.id} />

@@ -67,8 +67,8 @@ export function BottomNav({ groupId }: { groupId: string }) {
         )}
       </AnimatePresence>
 
-      {/* Bottom nav bar — 49px content + safe area spacer with matching bg */}
-      <nav className="shrink-0 z-20 border-t border-white/[0.06] bg-[#0e1015]">
+      {/* Bottom nav bar — fixed to screen bottom */}
+      <nav className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/[0.06] bg-[#0e1015]">
         <div className="w-full flex h-[49px] sm:h-[56px]">
           {navTabs.map((tab) => {
             const active = isActive(tab.path)
