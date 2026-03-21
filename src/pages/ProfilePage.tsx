@@ -44,11 +44,12 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
 function SettingsRow({ icon: Icon, label, sub, right, onClick, danger }: {
   icon: typeof User; label: string; sub?: string; right?: React.ReactNode; onClick?: () => void; danger?: boolean
 }) {
+  const Tag = onClick && !right ? 'button' : 'div'
   return (
-    <button onClick={onClick} disabled={!onClick && !right}
+    <Tag onClick={onClick}
       className={cn(
         'w-full flex items-center gap-3.5 px-4 py-3.5 text-left transition-colors',
-        onClick && 'active:bg-white/[0.02]'
+        onClick && 'active:bg-white/[0.02] cursor-pointer'
       )}>
       <div className={cn(
         'w-8 h-8 rounded-xl flex items-center justify-center shrink-0',
@@ -61,7 +62,7 @@ function SettingsRow({ icon: Icon, label, sub, right, onClick, danger }: {
         {sub && <p className="text-[11px] text-zinc-600 mt-0.5">{sub}</p>}
       </div>
       {right || (onClick && <ChevronRight size={16} className="text-zinc-700" />)}
-    </button>
+    </Tag>
   )
 }
 

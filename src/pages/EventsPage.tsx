@@ -209,10 +209,17 @@ export function EventsPage() {
         </div>
 
         <div className="px-4 py-3 space-y-2">
-          <div className="flex items-center gap-2 text-[12px] text-zinc-400">
-            <Clock size={13} className="text-zinc-600" />
-            {event.time} {t('events.oclock')}
-          </div>
+          {event.id.startsWith('bday-') ? (
+            <div className="flex items-center gap-2 text-[12px] text-zinc-400">
+              <span className="text-zinc-600">🎂</span>
+              {t('events.all_day')}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-[12px] text-zinc-400">
+              <Clock size={13} className="text-zinc-600" />
+              {event.time} {t('events.oclock')}
+            </div>
+          )}
           {event.location && (
             <div className="flex items-center gap-2 text-[12px] text-zinc-400">
               <MapPin size={13} className="text-zinc-600" />
@@ -224,7 +231,7 @@ export function EventsPage() {
           )}
 
           {/* Attendees */}
-          <div className="flex items-center justify-between pt-1">
+          {!event.id.startsWith('bday-') && <div className="flex items-center justify-between pt-1">
             <div className="flex items-center gap-2">
               <Users size={13} className="text-zinc-600" />
               <div className="flex -space-x-1.5">
@@ -233,7 +240,7 @@ export function EventsPage() {
               <span className="text-[11px] text-zinc-600">{event.attendees.length}/{group.members.length}</span>
             </div>
 
-            {!isPast && (
+            {!isPast && !event.id.startsWith('bday-') && (
               <button
                 onClick={() => toggleRSVP(group.id, event.id, getAuthorId())}
                 className={cn(
@@ -246,7 +253,7 @@ export function EventsPage() {
                 {going ? <><Check size={12} /> {t('events.attending')}</> : <><Plus size={12} /> {t('events.rsvp')}</>}
               </button>
             )}
-          </div>
+          </div>}
 
           {/* Linked items */}
           {event.linkedItems && event.linkedItems.length > 0 && (

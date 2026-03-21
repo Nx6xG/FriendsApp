@@ -410,6 +410,8 @@ const translations = {
   'referral.signup_cta': { de: 'Jetzt registrieren', en: 'Sign up now' },
   'referral.invalid': { de: 'Ungültiger Einladungslink', en: 'Invalid referral link' },
 
+  'events.all_day': { de: 'Ganztägig', en: 'All day' },
+
   // ─── Birthday ───
   'profile.birthday': { de: 'Geburtstag', en: 'Birthday' },
   'profile.birthday_placeholder': { de: 'TT.MM.', en: 'DD.MM.' },
