@@ -179,7 +179,7 @@ export default function App() {
       <BrowserRouter>
         <ThemeProvider>
           <SplashGate>
-            <div className="flex flex-col flex-1 min-h-0 h-full bg-[#0a0c12] text-zinc-100 overflow-hidden">
+            <div className="flex flex-col flex-1 min-h-0 h-dvh bg-[#0a0c12] text-zinc-100 overflow-hidden">
               <AppRoutes />
             </div>
           </SplashGate>
