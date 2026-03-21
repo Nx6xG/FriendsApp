@@ -1,56 +1,69 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAppStore } from '@/stores/appStore'
 import { Avatar } from '@/components/ui/Avatar'
-import { getUserName, isMe } from '@/lib/users'
+import { getUserName } from '@/lib/users'
+import { fetchGroupByInviteCode, dbAddMember } from '@/lib/supabaseData'
+import { resync } from '@/lib/sync'
+
+interface GroupPreview {
+  id: string
+  name: string
+  emoji: string
+  inviteCode: string
+  members: string[]
+  memberIds: string[]
+}
 
 export function JoinPage() {
   const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
-  const { groups, joinGroup, profile, updateProfile } = useAppStore()
-  // Find the group by invite code
-  const group = groups.find((g) => g.inviteCode === code?.toUpperCase())
+  const { currentUserId, profile } = useAppStore()
+  const [status, setStatus] = useState<'loading' | 'found' | 'not_found' | 'already_member' | 'joined'>('loading')
+  const [group, setGroup] = useState<GroupPreview | null>(null)
 
-  // Determine status synchronously (no useEffect needed)
-  const getStatus = (): 'found' | 'not_found' | 'already_member' => {
-    if (!code || !group) return 'not_found'
-    if (group.members.some(isMe)) return 'already_member'
-    return 'found'
-  }
-
-  const [status, setStatus] = useState<'found' | 'not_found' | 'already_member' | 'joined'>(getStatus)
-
-  const handleJoin = () => {
-    if (!code) return
-    const result = joinGroup(code)
-    if (result) {
-      setStatus('joined')
-      setTimeout(() => navigate(`/group/${result.id}`), 1000)
+  useEffect(() => {
+    let cancelled = false
+    if (!code) { Promise.resolve().then(() => { if (!cancelled) setStatus('not_found') }); return () => { cancelled = true } }
+    const load = async () => {
+      const result = await fetchGroupByInviteCode(code.toUpperCase())
+      if (cancelled) return
+      if (!result) {
+        setStatus('not_found')
+        return
+      }
+      setGroup(result)
+      if (currentUserId && result.memberIds.includes(currentUserId)) {
+        setStatus('already_member')
+      } else {
+        setStatus('found')
+      }
     }
-  }
+    load()
+    return () => { cancelled = true }
+  }, [code, currentUserId])
 
-  const handleLater = () => {
-    if (!group) { navigate('/'); return }
-    const pending = profile.pendingInvites || []
-    if (!pending.some((p) => p.groupId === group.id)) {
-      updateProfile({
-        pendingInvites: [...pending, {
-          groupId: group.id,
-          groupName: group.name,
-          groupEmoji: group.emoji,
-          members: group.members,
-          invitedAt: Date.now(),
-        }],
-      })
+  const handleJoin = async () => {
+    if (!group || !currentUserId) return
+    const { error } = await dbAddMember(group.id, currentUserId, 'member')
+    if (error) {
+      console.error('[Join] Failed:', error)
+      return
     }
-    navigate('/')
+    setStatus('joined')
+    await resync()
+    setTimeout(() => navigate(`/group/${group.id}`), 1000)
   }
 
   const lang = profile.language
 
   return (
     <div className="h-full flex flex-col items-center justify-center bg-[#0a0c12] px-8">
+      {status === 'loading' && (
+        <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+      )}
+
       {status === 'not_found' && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
           <span className="text-5xl mb-4 block">❌</span>
@@ -62,12 +75,12 @@ export function JoinPage() {
         </motion.div>
       )}
 
-      {status === 'already_member' && (
+      {status === 'already_member' && group && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
           <span className="text-5xl mb-4 block">✅</span>
           <h2 className="text-[20px] font-extrabold">{lang === 'de' ? 'Bereits Mitglied' : 'Already a member'}</h2>
           <p className="text-zinc-500 text-[14px] mt-2">{lang === 'de' ? 'Du bist schon in dieser Gruppe.' : 'You\'re already in this group.'}</p>
-          <button onClick={() => navigate(group ? `/group/${group.id}` : '/')} className="mt-6 px-8 py-3 bg-indigo-500 text-white rounded-2xl font-bold text-[14px] active:scale-95">
+          <button onClick={() => navigate(`/group/${group.id}`)} className="mt-6 px-8 py-3 bg-indigo-500 text-white rounded-2xl font-bold text-[14px] active:scale-95">
             {lang === 'de' ? 'Zur Gruppe' : 'Go to group'}
           </button>
         </motion.div>
@@ -108,10 +121,6 @@ export function JoinPage() {
           <button onClick={handleJoin}
             className="w-full py-4 bg-indigo-500 text-white rounded-2xl font-bold text-[15px] active:scale-95 transition-all mb-3">
             {lang === 'de' ? 'Gruppe beitreten' : 'Join group'}
-          </button>
-          <button onClick={handleLater}
-            className="w-full py-3 border border-white/[0.08] rounded-2xl text-[14px] font-medium text-zinc-400 active:bg-white/[0.02] mb-3">
-            {lang === 'de' ? 'Später' : 'Later'}
           </button>
           <button onClick={() => navigate('/')}
             className="text-[13px] text-zinc-600 active:text-zinc-400">

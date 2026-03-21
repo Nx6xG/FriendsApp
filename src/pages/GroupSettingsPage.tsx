@@ -38,6 +38,7 @@ export function GroupSettingsPage() {
   const [editTagName, setEditTagName] = useState('')
   const [editTagColor, setEditTagColor] = useState('')
   const [tracking, setTracking] = useState(isTrackingGroup(group.id))
+  const [copiedInvite, setCopiedInvite] = useState(false)
   const [showProPrompt, setShowProPrompt] = useState<string | false>(false)
 
   const prefs = groupPrefs[group.id] ?? DEFAULT_GROUP_PREFS
@@ -171,15 +172,18 @@ export function GroupSettingsPage() {
           <button onClick={() => {
             const code = group.inviteCode || generateInviteCode(group.id)
             const url = `${window.location.origin}/join/${code}`
+            const msg = `${group.emoji} ${group.name}\n${t('gsettings.share_text')}\n${url}`
             if (navigator.share) {
-              navigator.share({ title: `${group.emoji} ${group.name}`, text: `${t('gsettings.share_text')} "${group.name}"!`, url })
+              navigator.share({ title: `${group.emoji} ${group.name}`, text: msg, url })
             } else {
-              navigator.clipboard.writeText(url)
+              navigator.clipboard.writeText(msg)
+              setCopiedInvite(true)
+              setTimeout(() => setCopiedInvite(false), 2000)
             }
           }}
             className="w-full py-3.5 bg-indigo-500 text-white rounded-xl font-bold text-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2">
             <Share2 size={16} />
-            {t('gsettings.invite')}
+            {copiedInvite ? `✓ ${t('referral.copied')}` : t('gsettings.invite')}
           </button>
         </motion.div>
       )}

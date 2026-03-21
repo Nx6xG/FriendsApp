@@ -186,6 +186,42 @@ export const dbInsertGroup = (g: { id: string; name: string; emoji: string; invi
 export const dbUpdateGroup = (id: string, updates: Record<string, unknown>) =>
   supabase.from('groups').update(updates).eq('id', id)
 
+/** Fetch a group by invite code (for join flow — caller may not be a member yet) */
+export async function fetchGroupByInviteCode(code: string) {
+  const { data } = await supabase
+    .from('groups')
+    .select('id, name, emoji, invite_code')
+    .eq('invite_code', code)
+    .single()
+  if (!data) return null
+
+  // Also fetch members + profiles for display
+  const { data: members } = await supabase
+    .from('group_members')
+    .select('user_id')
+    .eq('group_id', data.id)
+  const memberIds = (members || []).map((m) => m.user_id)
+
+  const { data: profiles } = memberIds.length > 0
+    ? await supabase.from('profiles').select('id, name').in('id', memberIds)
+    : { data: [] }
+
+  const memberNames = memberIds.map((uid) => {
+    const p = (profiles || []).find((pr) => pr.id === uid)
+    if (p) registerUser(p.id, p.name)
+    return p?.name || uid
+  })
+
+  return {
+    id: data.id,
+    name: data.name,
+    emoji: data.emoji,
+    inviteCode: data.invite_code,
+    members: memberNames,
+    memberIds,
+  }
+}
+
 export const dbDeleteGroup = (id: string) =>
   supabase.from('groups').delete().eq('id', id)
 
