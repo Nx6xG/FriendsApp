@@ -174,7 +174,7 @@ export function GroupSettingsPage() {
             const url = `${window.location.origin}/join/${code}`
             const msg = `${group.emoji} ${group.name}\n${t('gsettings.share_text')}\n${url}`
             if (navigator.share) {
-              navigator.share({ title: `${group.emoji} ${group.name}`, text: msg, url })
+              navigator.share({ text: msg })
             } else {
               navigator.clipboard.writeText(msg)
               setCopiedInvite(true)

@@ -27,7 +27,7 @@ export function JoinPage() {
     let cancelled = false
     if (!code) { Promise.resolve().then(() => { if (!cancelled) setStatus('not_found') }); return () => { cancelled = true } }
     const load = async () => {
-      const result = await fetchGroupByInviteCode(code.toUpperCase())
+      const result = await fetchGroupByInviteCode(code)
       if (cancelled) return
       if (!result) {
         setStatus('not_found')

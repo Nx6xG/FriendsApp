@@ -188,23 +188,20 @@ export const dbUpdateGroup = (id: string, updates: Record<string, unknown>) =>
 
 /** Fetch a group by invite code (for join flow — caller may not be a member yet) */
 export async function fetchGroupByInviteCode(code: string) {
-  // Try exact match first, then case-insensitive
-  // eslint-disable-next-line prefer-const
-  let { data, error } = await supabase
+  // Use ilike for case-insensitive match, maybeSingle to avoid errors on 0 results
+  const { data, error } = await supabase
     .from('groups')
     .select('id, name, emoji, invite_code')
-    .eq('invite_code', code)
-    .single()
-  if (!data && error) {
-    // Try case-insensitive match
-    const { data: d2 } = await supabase
-      .from('groups')
-      .select('id, name, emoji, invite_code')
-      .ilike('invite_code', code)
-      .single()
-    data = d2
+    .ilike('invite_code', code)
+    .maybeSingle()
+  if (error) {
+    logError('[Join] fetchGroupByInviteCode error:', error.message, 'code:', code)
+    return null
   }
-  if (!data) return null
+  if (!data) {
+    logError('[Join] No group found for invite code:', code)
+    return null
+  }
 
   // Also fetch members + profiles for display
   const { data: members } = await supabase

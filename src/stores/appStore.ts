@@ -414,7 +414,11 @@ export const useAppStore = create<AppState>()(
         set((s) => ({
           groups: updateGroup(s.groups, groupId, (g) => ({ ...g, inviteCode: code })),
         }))
-        if (!get().demoMode) db.dbUpdateGroup(groupId, { invite_code: code })
+        if (!get().demoMode) {
+          db.dbUpdateGroup(groupId, { invite_code: code }).then(({ error }) => {
+            if (error) logError('[DB] Failed to save invite code:', error)
+          })
+        }
         return code
       },
 
