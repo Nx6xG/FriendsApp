@@ -7,12 +7,18 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 
 // Safe area insets are injected by native Swift code (AppDelegate.swift)
 // via evaluateJavaScript setting --safe-top and --safe-bottom CSS vars.
-// On web, the fallback values in CSS (47px/34px) are used but only on native.
-// On web browsers, 0px is correct since there's no notch.
-if (!Capacitor.isNativePlatform()) {
+// On web browsers (not PWA), set to 0px. In standalone PWA, let env() handle it via CSS.
+const isStandalonePwa = window.matchMedia('(display-mode: standalone)').matches
+  || ('standalone' in navigator && (navigator as { standalone?: boolean }).standalone)
+if (!Capacitor.isNativePlatform() && !isStandalonePwa) {
   document.documentElement.style.setProperty('--safe-top', '0px')
   document.documentElement.style.setProperty('--safe-bottom', '0px')
 }
+
+// Set --app-height to real window height (fixes iOS 100vh bug)
+const setAppHeight = () => document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`)
+setAppHeight()
+window.addEventListener('resize', setAppHeight)
 
 // Keyboard handling — only on native, dynamically imported to avoid web crashes
 if (Capacitor.isNativePlatform()) {
