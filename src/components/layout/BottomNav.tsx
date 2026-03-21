@@ -67,8 +67,8 @@ export function BottomNav({ groupId }: { groupId: string }) {
         )}
       </AnimatePresence>
 
-      {/* Bottom nav bar — 49px content like iOS, plus safe area. pb-safe ensures bg extends to screen edge */}
-      <nav className="shrink-0 z-20 border-t border-white/[0.06] bg-[#0e1015] pb-safe">
+      {/* Bottom nav bar — 49px content + safe area spacer with matching bg */}
+      <nav className="shrink-0 z-20 border-t border-white/[0.06] bg-[#0e1015]">
         <div className="w-full flex h-[49px] sm:h-[56px]">
           {navTabs.map((tab) => {
             const active = isActive(tab.path)
@@ -95,6 +95,8 @@ export function BottomNav({ groupId }: { groupId: string }) {
             </button>
           )}
         </div>
+        {/* Safe area fill — same bg color extends to screen bottom edge */}
+        <div className="safe-bottom bg-[#0e1015]" />
       </nav>
     </>
   )
