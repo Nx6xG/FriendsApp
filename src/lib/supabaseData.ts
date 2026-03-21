@@ -59,6 +59,7 @@ export async function fetchUserGroups(userId: string): Promise<Group[]> {
     ? await supabase.from('profiles').select('id, name, emoji, birthday').in('id', memberUserIds)
     : { data: [] }
 
+
   if (!groups) return []
 
   // Register all profiles in the name cache
@@ -79,14 +80,8 @@ export async function fetchUserGroups(userId: string): Promise<Group[]> {
       emoji: g.emoji,
       inviteCode: g.invite_code,
       settings: g.settings || {},
-      members: gMembers.map((m) => {
-        const profile = (allProfiles || []).find((p) => p.id === m.user_id)
-        return profile?.name || m.user_id
-      }),
-      memberRoles: gMembers.map((m) => {
-        const profile = (allProfiles || []).find((p) => p.id === m.user_id)
-        return { name: profile?.name || m.user_id, role: m.role, funRole: m.fun_role }
-      }),
+      members: gMembers.map((m) => m.user_id),
+      memberRoles: gMembers.map((m) => ({ name: m.user_id, role: m.role, funRole: m.fun_role })),
       todos: gTodos.map((t): TodoItem => ({
         id: t.id, text: t.text, description: t.description,
         assigneeIds: t.assignee_ids || [], tags: t.tags || [],

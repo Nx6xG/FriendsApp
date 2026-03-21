@@ -33,7 +33,7 @@ export function getUserName(id: string): string {
   }
   // Backwards compat: if it's not a UUID, it's probably already a name
   if (id.length < 36 && !id.includes('-')) return id
-  return id.slice(0, 8)
+  return 'User'
 }
 
 /**

@@ -146,8 +146,18 @@ export function ProfilePage() {
               className="block text-[12px] text-zinc-500 mt-1.5 active:text-zinc-300">
               {profile.status || t('profile.set_status')}
             </button>
-            <div className="flex items-center gap-1.5 mt-1.5">
+            <label className="flex items-center gap-1.5 mt-1.5 cursor-pointer active:opacity-70">
               <span className="text-[11px]">🎂</span>
+              {profile.birthday ? (() => {
+                const parts = profile.birthday.split('.')
+                const dd = parts[0], mm = parts[1], yyyy = parts[2]
+                const months = profile.language === 'de'
+                  ? ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
+                  : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                return <span className="text-[11px] text-indigo-400">{parseInt(dd)}. {months[parseInt(mm) - 1]} {yyyy}</span>
+              })() : (
+                <span className="text-[11px] text-zinc-600">{t('profile.birthday_set')}</span>
+              )}
               <input
                 type="date"
                 value={(() => {
@@ -162,10 +172,9 @@ export function ProfilePage() {
                     updateProfile({ birthday: undefined })
                   }
                 }}
-                className="bg-transparent text-[11px] text-indigo-400 outline-none appearance-none [-webkit-appearance:none]"
-                style={{ colorScheme: 'dark' }}
+                className="sr-only"
               />
-            </div>
+            </label>
           </div>
         </div>
 
