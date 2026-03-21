@@ -15,10 +15,6 @@ if (!Capacitor.isNativePlatform() && !isStandalonePwa) {
   document.documentElement.style.setProperty('--safe-bottom', '0px')
 }
 
-// Set --app-height to real window height (fixes iOS 100vh bug)
-const setAppHeight = () => document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`)
-setAppHeight()
-window.addEventListener('resize', setAppHeight)
 
 // Keyboard handling — only on native, dynamically imported to avoid web crashes
 if (Capacitor.isNativePlatform()) {
