@@ -194,6 +194,9 @@ export const dbAddMember = (groupId: string, userId: string, role = 'member') =>
 export const dbRemoveMember = (groupId: string, userId: string) =>
   supabase.from('group_members').delete().eq('group_id', groupId).eq('user_id', userId)
 
+export const dbUpdateMember = (groupId: string, userId: string, updates: { role?: string; fun_role?: string }) =>
+  supabase.from('group_members').update(updates).eq('group_id', groupId).eq('user_id', userId)
+
 // Todos
 export const dbInsertTodo = (groupId: string, t: TodoItem, createdBy: string) =>
   supabase.from('todos').insert({

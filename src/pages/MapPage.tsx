@@ -1,14 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import { Plus, X, Navigation, Eye, EyeOff, Locate } from 'lucide-react'
+import { Plus, X, Navigation, Eye, EyeOff } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useAppStore } from '@/stores/appStore'
-import { canUseFeature } from '@/lib/plans'
 import { ProPrompt } from '@/components/ui/ProGate'
-import { startLocationTracking, stopLocationTracking, isTrackingGroup } from '@/lib/location'
 import { uid, cn, timeAgo } from '@/lib/utils'
 import { getAuthorId, isMe, getUserName } from '@/lib/users'
 import { Avatar } from '@/components/ui/Avatar'
@@ -102,25 +100,9 @@ export function MapPage() {
   const [showLive, setShowLive] = useState(true)
   const [selectedPin, setSelectedPin] = useState<MapPinType | null>(null)
   const [filter, setFilter] = useState<'all' | 'visited' | 'wishlist'>('all')
-  const [tracking, setTracking] = useState(isTrackingGroup(group.id))
   const [flyTarget, setFlyTarget] = useState<{ lat: number; lng: number } | null>(null)
   const [tapLocation, setTapLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [showProPrompt, setShowProPrompt] = useState(false)
-
-  const toggleTracking = useCallback(async () => {
-    if (tracking) {
-      await stopLocationTracking(group.id)
-      setTracking(false)
-    } else {
-      if (!canUseFeature('gps')) { setShowProPrompt(true); return }
-      try {
-        const success = await startLocationTracking(group.id)
-        setTracking(success ?? false)
-      } catch {
-        setTracking(false)
-      }
-    }
-  }, [tracking, group.id])
 
   // Form state
   const [label, setLabel] = useState('')
@@ -204,11 +186,6 @@ export function MapPage() {
           ))}
         </div>
         <div className="flex gap-1.5">
-          <button onClick={toggleTracking}
-            className={cn('p-2.5 rounded-lg transition-colors', tracking ? 'text-indigo-400 bg-indigo-500/10' : 'text-zinc-600 bg-white/[0.03]')}
-            title={tracking ? t('map.share_on') : t('map.share_off')}>
-            <Locate size={14} />
-          </button>
           <button onClick={() => setShowLive(!showLive)}
             className={cn('p-2.5 rounded-lg transition-colors', showLive ? 'text-emerald-400 bg-emerald-500/10' : 'text-zinc-600 bg-white/[0.03]')}>
             {showLive ? <Eye size={14} /> : <EyeOff size={14} />}

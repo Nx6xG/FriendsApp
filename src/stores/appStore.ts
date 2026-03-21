@@ -583,13 +583,15 @@ export const useAppStore = create<AppState>()(
       },
 
       // V2: Roles & Settings
-      updateMemberRole: (groupId, memberName, role) =>
+      updateMemberRole: (groupId, memberName, role) => {
         set((s) => ({
           groups: updateGroup(s.groups, groupId, (g) => ({
             ...g,
             memberRoles: (g.memberRoles || []).map((m) => (m.name === memberName ? role : m)),
           })),
-        })),
+        }))
+        if (!get().demoMode) db.dbUpdateMember(groupId, memberName, { role: role.role, fun_role: role.funRole }).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
+      },
       updateGroupSettings: (groupId, settings) => {
         set((s) => ({
           groups: updateGroup(s.groups, groupId, (g) => ({
@@ -688,7 +690,15 @@ export const useAppStore = create<AppState>()(
         set((s) => ({ notifications: s.notifications.map((n) => n.id === id ? { ...n, read: true } : n) }))
         if (!get().demoMode) db.dbUpdateNotification(id, { read: true }).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
       },
-      clearNotifications: () => set((s) => ({ notifications: s.notifications.map((n) => ({ ...n, read: true })) })),
+      clearNotifications: () => {
+        const unread = get().notifications.filter((n) => !n.read)
+        set((s) => ({ notifications: s.notifications.map((n) => ({ ...n, read: true })) }))
+        if (!get().demoMode) {
+          for (const n of unread) {
+            db.dbUpdateNotification(n.id, { read: true }).then(({ error: e }) => { if (e) logError("[DB]", e.message) })
+          }
+        }
+      },
 
       // Profile
       profile: {

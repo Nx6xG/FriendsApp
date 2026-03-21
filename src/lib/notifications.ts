@@ -1,5 +1,6 @@
 import { Capacitor } from '@capacitor/core'
 import { useAppStore } from '@/stores/appStore'
+import { getUserName, isMe } from '@/lib/users'
 import type { GroupEvent, TodoItem, Expense } from '@/types'
 
 // Convert string ID to numeric ID for LocalNotifications API
@@ -69,7 +70,7 @@ export async function cancelEventReminder(eventId: string) {
  */
 export async function notifyTodoAssigned(todo: TodoItem, groupId: string) {
   const store = useAppStore.getState()
-  if (!todo.assigneeIds.includes(store.currentUser)) return
+  if (!todo.assigneeIds.some(isMe)) return
   await fireNotification('✅ Neue Aufgabe', `"${todo.text}" wurde dir zugewiesen`, groupId)
   store.addNotification({
     id: `todo-${todo.id}`, type: 'todo',
@@ -82,12 +83,13 @@ export async function notifyTodoAssigned(todo: TodoItem, groupId: string) {
  * Notify when an expense involves the current user.
  */
 export async function notifyExpenseAdded(expense: Expense, groupId: string) {
+  if (!expense.splitBetween.some(isMe) || isMe(expense.paidById)) return
+  const paidByName = getUserName(expense.paidById)
+  await fireNotification('💰 Neue Ausgabe', `${paidByName} hat "${expense.title}" hinzugefügt`, groupId)
   const store = useAppStore.getState()
-  if (!expense.splitBetween.includes(store.currentUser) || expense.paidById === store.currentUser) return
-  await fireNotification('💰 Neue Ausgabe', `${expense.paidById} hat "${expense.title}" hinzugefügt`, groupId)
   store.addNotification({
     id: `exp-${expense.id}`, type: 'expense',
-    title: 'Neue Ausgabe', body: `${expense.paidById} hat "${expense.title}" hinzugefügt`,
+    title: 'Neue Ausgabe', body: `${paidByName} hat "${expense.title}" hinzugefügt`,
     groupId, read: false, timestamp: Date.now(),
   })
 }

@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, User, Bell, Moon, Globe, Trash2, LogOut, Shi
 import { motion } from 'framer-motion'
 import { useAppStore } from '@/stores/appStore'
 import { supabase } from '@/lib/supabase'
+import { cleanup } from '@/lib/sync'
 import { cn } from '@/lib/utils'
 import { useT } from '@/lib/i18n'
 
@@ -165,7 +166,7 @@ export function ProfilePage() {
               <input
                 type="text"
                 placeholder="🔍"
-                maxLength={2}
+                maxLength={4}
                 className="w-12 h-12 text-center text-2xl bg-[#0e1015] border border-white/[0.08] rounded-xl outline-none focus:border-indigo-500/50"
                 onInput={(e) => {
                   const val = (e.target as HTMLInputElement).value
@@ -351,7 +352,7 @@ export function ProfilePage() {
           <SettingsRow icon={LogOut}
             label={profile.language === 'de' ? 'Ausloggen' : 'Log out'}
             sub={profile.language === 'de' ? 'Von diesem Gerät abmelden' : 'Sign out from this device'} danger
-            onClick={() => { supabase.auth.signOut(); navigate('/') }} />
+            onClick={() => { cleanup(); supabase.auth.signOut(); navigate('/') }} />
         </div>
       </div>
 

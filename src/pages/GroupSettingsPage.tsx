@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { useOutletContext, useNavigate } from 'react-router-dom'
-import { Plus, X, Trash2, Shield, Crown, Eye, Pencil, Share2 } from 'lucide-react'
+import { Plus, X, Trash2, Shield, Crown, Eye, Pencil, Share2, Locate } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAppStore } from '@/stores/appStore'
 import { cn } from '@/lib/utils'
 import { Avatar } from '@/components/ui/Avatar'
 import { getUserName } from '@/lib/users'
 import { ALL_TABS, DEFAULT_GROUP_PREFS } from '@/lib/tabs'
+import { startLocationTracking, stopLocationTracking, isTrackingGroup } from '@/lib/location'
+import { canUseFeature } from '@/lib/plans'
+import { ProPrompt } from '@/components/ui/ProGate'
 import { useT } from '@/lib/i18n'
 import type { Group, MemberRole, TagDef } from '@/types'
 
@@ -34,8 +37,25 @@ export function GroupSettingsPage() {
   const [editingTag, setEditingTag] = useState<string | null>(null)
   const [editTagName, setEditTagName] = useState('')
   const [editTagColor, setEditTagColor] = useState('')
+  const [tracking, setTracking] = useState(isTrackingGroup(group.id))
+  const [showProPrompt, setShowProPrompt] = useState<string | false>(false)
 
   const prefs = groupPrefs[group.id] ?? DEFAULT_GROUP_PREFS
+
+  const toggleTracking = async () => {
+    if (tracking) {
+      await stopLocationTracking(group.id)
+      setTracking(false)
+    } else {
+      if (!canUseFeature('gps')) { setShowProPrompt('Live-Standort'); return }
+      try {
+        const success = await startLocationTracking(group.id)
+        setTracking(success ?? false)
+      } catch {
+        setTracking(false)
+      }
+    }
+  }
 
   const tags = group.settings?.todoTags || []
   const memberRoles = group.memberRoles || group.members.map((m) => ({ name: m, role: 'member' as MemberRole, funRole: undefined }))
@@ -117,13 +137,28 @@ export function GroupSettingsPage() {
         {showEmojiPicker && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
             className="overflow-hidden pt-3 border-t border-white/[0.06]">
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 mb-3">
               {EMOJIS.map((e) => (
                 <button key={e} onClick={() => handleEmojiSelect(e)}
                   className={cn('text-2xl p-1.5 rounded-xl border transition-colors',
                     emoji === e ? 'border-indigo-500 bg-indigo-500/10' : 'border-white/[0.06] bg-[#0e1015]'
                   )}>{e}</button>
               ))}
+            </div>
+            <div className="flex gap-2 items-center">
+              <input
+                type="text"
+                placeholder="🔍"
+                maxLength={4}
+                className="w-12 h-12 text-center text-2xl bg-[#0e1015] border border-white/[0.08] rounded-xl outline-none focus:border-indigo-500/50"
+                onInput={(e) => {
+                  const val = (e.target as HTMLInputElement).value
+                  if (val && /\p{Emoji}/u.test(val)) {
+                    handleEmojiSelect(val)
+                  }
+                }}
+              />
+              <span className="text-[11px] text-zinc-600">Eigenes Emoji eingeben</span>
             </div>
           </motion.div>
         )}
@@ -342,6 +377,34 @@ export function GroupSettingsPage() {
             ))}
           </div>
         </div>
+
+        {/* Location sharing */}
+        <div className="mt-4">
+          <button onClick={toggleTracking}
+            className={cn(
+              'w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-colors',
+              tracking ? 'bg-indigo-500/10 border border-indigo-500/20' : 'bg-[#0e1015] border border-white/[0.06]'
+            )}>
+            <Locate size={16} className={tracking ? 'text-indigo-400' : 'text-zinc-500'} />
+            <div className="flex-1 text-left">
+              <p className={cn('text-[13px] font-medium', tracking ? 'text-indigo-300' : 'text-zinc-400')}>
+                {tracking ? t('map.share_on') : t('map.share_off')}
+              </p>
+              <p className="text-[11px] text-zinc-600">
+                {tracking ? 'Dein Standort ist für Mitglieder sichtbar' : 'Standort mit dieser Gruppe teilen'}
+              </p>
+            </div>
+            <div className={cn(
+              'w-10 h-6 rounded-full transition-colors relative',
+              tracking ? 'bg-indigo-500' : 'bg-zinc-700'
+            )}>
+              <div className={cn(
+                'w-5 h-5 rounded-full bg-white absolute top-0.5 transition-all',
+                tracking ? 'left-[18px]' : 'left-0.5'
+              )} />
+            </div>
+          </button>
+        </div>
       </motion.div>
 
       {/* Danger zone */}
@@ -384,6 +447,8 @@ export function GroupSettingsPage() {
           </motion.div>
         </div>
       )}
+
+      {showProPrompt && <ProPrompt feature={showProPrompt as string} onClose={() => setShowProPrompt(false)} />}
     </div>
   )
 }
