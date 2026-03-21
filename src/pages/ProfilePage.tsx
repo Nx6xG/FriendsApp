@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, User, Bell, Moon, Globe, Trash2, LogOut, Shield, Info, EyeOff, Eye, HelpCircle, Zap } from 'lucide-react'
+import { ChevronLeft, ChevronRight, User, Bell, Moon, Globe, Trash2, LogOut, Shield, Info, EyeOff, Eye, HelpCircle, Zap, Heart, Share2, Gift, Copy } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAppStore } from '@/stores/appStore'
 import { supabase } from '@/lib/supabase'
@@ -336,6 +336,45 @@ export function ProfilePage() {
         </div>
       </div>
 
+      {/* Referral */}
+      {profile.referralCode && (
+        <div className="mx-4 mt-6">
+          <div className="bg-gradient-to-br from-indigo-600/15 to-violet-600/10 border border-indigo-500/20 rounded-2xl p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Gift size={16} className="text-indigo-400" />
+              <h3 className="text-[13px] font-bold text-indigo-300">{t('referral.title')}</h3>
+            </div>
+            <p className="text-[12px] text-zinc-400 mb-3">{t('referral.description')}</p>
+            <div className="flex gap-2">
+              <button onClick={() => {
+                const url = `${window.location.origin}/ref/${profile.referralCode}`
+                if (navigator.share) {
+                  navigator.share({ title: 'Friends App', text: t('referral.description'), url })
+                } else {
+                  navigator.clipboard.writeText(url)
+                  const btn = document.getElementById('ref-copy-btn')
+                  if (btn) { btn.dataset.copied = 'true'; setTimeout(() => { btn.dataset.copied = '' }, 2000) }
+                }
+              }}
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-indigo-500 text-white rounded-xl font-bold text-[13px] active:scale-95 transition-all">
+                <Share2 size={14} /> {t('referral.share')}
+              </button>
+              <button id="ref-copy-btn" onClick={() => {
+                navigator.clipboard.writeText(`${window.location.origin}/ref/${profile.referralCode}`)
+                const btn = document.getElementById('ref-copy-btn')
+                if (btn) { btn.textContent = '✓'; setTimeout(() => { btn.textContent = '' }, 2000) }
+              }}
+                className="w-12 flex items-center justify-center bg-[#161822] border border-white/[0.08] rounded-xl text-zinc-400 active:text-indigo-400">
+                <Copy size={16} />
+              </button>
+            </div>
+            <p className="text-[10px] text-zinc-600 mt-2 text-center font-mono">
+              {window.location.origin}/ref/{profile.referralCode}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Other */}
       <div className="mx-4 mt-6 mb-10">
         <h3 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-2 px-1">{t('settings.other')}</h3>
@@ -346,6 +385,10 @@ export function ProfilePage() {
             onClick={() => { setShowSupport(true); setSupportSent(false); setSupportTitle(''); setSupportBody('') }} />
           <SettingsRow icon={Shield} label={t('settings.privacy')} sub={t('settings.privacy_sub')}
             onClick={() => setShowPrivacy(true)} />
+          <SettingsRow icon={Heart}
+            label={profile.language === 'de' ? 'Unterstütze uns' : 'Support us'}
+            sub={profile.language === 'de' ? 'Hilf mit, die App weiterzuentwickeln' : 'Help us keep building the app'}
+            onClick={() => window.open('https://ko-fi.com/nicogrim', '_blank')} />
           <SettingsRow icon={Info} label={t('settings.about')} sub="Version 1.0.0 — Made with ❤️" />
           <SettingsRow icon={Trash2} label={t('settings.delete_all')} sub={t('settings.delete_all_sub')} danger
             onClick={() => setShowConfirmReset(true)} />

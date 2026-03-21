@@ -153,6 +153,7 @@ export async function fetchProfile(userId: string): Promise<Partial<UserProfile>
     notificationsEnabled: data.notifications_enabled,
     plan: data.plan || 'free',
     planExpiresAt: data.plan_expires_at ? new Date(data.plan_expires_at).getTime() : undefined,
+    referralCode: data.referral_code,
   }
 }
 

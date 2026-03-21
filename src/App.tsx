@@ -25,32 +25,40 @@ import { GroupSettingsPage } from '@/pages/GroupSettingsPage'
 import { SearchPage } from '@/pages/SearchPage'
 import { PaywallPage } from '@/pages/PaywallPage'
 import { JoinPage } from '@/pages/JoinPage'
+import { ReferralPage } from '@/pages/ReferralPage'
 
 function AppRoutes() {
   return (
-    <AuthGate>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-      <Route path="/search" element={<SearchPage />} />
-      <Route path="/pro" element={<PaywallPage />} />
-      <Route path="/join/:code" element={<JoinPage />} />
-      <Route path="/notifications" element={<NotificationsPage />} />
-      <Route path="/profile" element={<ProfilePage />} />
-      <Route path="/group/:groupId" element={<GroupLayout />}>
-        <Route index element={<FeedPage />} />
-        <Route path="todos" element={<TodosPage />} />
-        <Route path="expenses" element={<ExpensesPage />} />
-        <Route path="ideas" element={<IdeasPage />} />
-        <Route path="chat" element={<ChatPage />} />
-        <Route path="events" element={<EventsPage />} />
-        <Route path="places" element={<PlacesPage />} />
-        <Route path="stats" element={<StatsPage />} />
-        <Route path="map" element={<MapPage />} />
-        <Route path="settings" element={<GroupSettingsPage />} />
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+    <Routes>
+      {/* Public route — accessible without auth */}
+      <Route path="/ref/:code" element={<ReferralPage />} />
+      {/* All other routes require auth */}
+      <Route path="*" element={
+        <AuthGate>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/pro" element={<PaywallPage />} />
+            <Route path="/join/:code" element={<JoinPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/group/:groupId" element={<GroupLayout />}>
+              <Route index element={<FeedPage />} />
+              <Route path="todos" element={<TodosPage />} />
+              <Route path="expenses" element={<ExpensesPage />} />
+              <Route path="ideas" element={<IdeasPage />} />
+              <Route path="chat" element={<ChatPage />} />
+              <Route path="events" element={<EventsPage />} />
+              <Route path="places" element={<PlacesPage />} />
+              <Route path="stats" element={<StatsPage />} />
+              <Route path="map" element={<MapPage />} />
+              <Route path="settings" element={<GroupSettingsPage />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AuthGate>
+      } />
     </Routes>
-    </AuthGate>
   )
 }
 
@@ -115,7 +123,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
       }
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session)
       if (session?.user) {
         const name = session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User'
@@ -125,6 +133,17 @@ function AuthGate({ children }: { children: React.ReactNode }) {
         setOnboarded(true)
         setShowOnboarding(false)
         initSync(session.user.id)
+        // Process pending referral after signup
+        if (event === 'SIGNED_IN') {
+          const pendingRef = localStorage.getItem('pendingReferralCode')
+          if (pendingRef) {
+            localStorage.removeItem('pendingReferralCode')
+            supabase.rpc('process_referral', {
+              p_referred_id: session.user.id,
+              p_referral_code: pendingRef,
+            })
+          }
+        }
       } else {
         cleanup()
         setShowOnboarding(true)

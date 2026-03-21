@@ -129,6 +129,7 @@ export interface UserProfile {
   hiddenGroups?: string[]
   plan?: PlanType
   planExpiresAt?: number
+  referralCode?: string
   pendingInvites?: PendingInvite[]
 }
 

@@ -325,6 +325,15 @@ const translations = {
   'role.member': { de: 'Mitglied', en: 'Member' },
   'role.viewer': { de: 'Zuschauer', en: 'Viewer' },
 
+  // ─── Referral ───
+  'referral.title': { de: 'Freunde einladen', en: 'Invite friends' },
+  'referral.description': { de: 'Teile deinen Link und erhalte 1 Monat Pro gratis!', en: 'Share your link and get 1 month of Pro for free!' },
+  'referral.share': { de: 'Link teilen', en: 'Share link' },
+  'referral.copied': { de: 'Link kopiert!', en: 'Link copied!' },
+  'referral.welcome': { de: 'hat dich eingeladen', en: 'invited you' },
+  'referral.signup_cta': { de: 'Jetzt registrieren', en: 'Sign up now' },
+  'referral.invalid': { de: 'Ungültiger Einladungslink', en: 'Invalid referral link' },
+
   // ─── Error ───
   'error.title': { de: 'Etwas ist schiefgelaufen', en: 'Something went wrong' },
   'error.body': { de: 'Die App hat einen unerwarteten Fehler festgestellt.', en: 'The app encountered an unexpected error.' },
